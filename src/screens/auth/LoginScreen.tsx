@@ -178,6 +178,10 @@ export default function ModernLoginScreen({
                 setEmail
               }
               placeholder="Email Address"
+              autoComplete="username"
+              textContentType="username"
+              importantForAutofill="yes"
+              autoCorrect={false}
               placeholderTextColor="rgba(0,0,0,0.4)"
               autoCapitalize="none"
               keyboardType="email-address"
@@ -203,6 +207,11 @@ export default function ModernLoginScreen({
                 setPassword
               }
               placeholder="Password"
+              autoComplete="password"
+              textContentType="password"
+              importantForAutofill="yes"
+              autoCapitalize="none"
+              autoCorrect={false}
               placeholderTextColor="rgba(0,0,0,0.4)"
               secureTextEntry={
                 !showPassword
@@ -218,7 +227,7 @@ export default function ModernLoginScreen({
                   prev => !prev
                 )
               }
-              hitSlop={8}
+              hitSlop={14}
             >
               {showPassword ? (
                 <EyeOff
@@ -401,7 +410,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
 
-    backgroundColor: "#F4F3FA",
+    backgroundColor: "#F5F5F5",
   },
 
   scroll: {
@@ -451,7 +460,7 @@ const styles = StyleSheet.create({
 
     fontWeight: "800",
 
-    color: "#28166f",
+    color: "#000000",
   },
 
   subtitle: {
@@ -515,7 +524,7 @@ const styles = StyleSheet.create({
 
     fontWeight: "600",
 
-    color: "#28166f",
+    color: "#000000",
   },
 
   submitButton: {
@@ -527,7 +536,7 @@ const styles = StyleSheet.create({
 
     gap: 8,
 
-    backgroundColor: "#28166f",
+    backgroundColor: "#000000",
 
     borderRadius: 24,
 
@@ -613,7 +622,7 @@ const styles = StyleSheet.create({
 
     fontWeight: "700",
 
-    color: "#28166f",
+    color: "#000000",
   },
 
   guestWrap: {

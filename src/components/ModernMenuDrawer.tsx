@@ -23,12 +23,15 @@ import {
   Users,
   MessageCircle,
   LogOut,
+  LogIn,
   Info,
   StickyNote,
   Building2
 } from "lucide-react-native";
 
 import { useTheme } from "@/theme/ThemeContext";
+
+import { useAuthStore } from "@/store/authStore";
 
 interface Props {
   visible: boolean;
@@ -124,6 +127,10 @@ export default function ModernMenuDrawer({
 }: Props) {
   const { colors } = useTheme();
 
+  const isGuest = useAuthStore(
+    state => state.isGuest
+  );
+
   return (
     <Modal
       visible={visible}
@@ -214,7 +221,7 @@ export default function ModernMenuDrawer({
                 onPress={
                   onClose
                 }
-                hitSlop={8}
+                hitSlop={14}
               >
                 <X
                   size={22}
@@ -376,30 +383,44 @@ export default function ModernMenuDrawer({
                 activeOpacity={0.8}
                 onPress={() =>
                   onNavigate(
-                    "Logout"
+                    isGuest
+                      ? "Login"
+                      : "Logout"
                   )
                 }
                 style={
                   styles.item
                 }
               >
-                <LogOut
-                  size={19}
-                  color={
-                    colors.danger
-                  }
-                />
+                {isGuest ? (
+                  <LogIn
+                    size={19}
+                    color={
+                      colors.primary
+                    }
+                  />
+                ) : (
+                  <LogOut
+                    size={19}
+                    color={
+                      colors.danger
+                    }
+                  />
+                )}
 
                 <Text
                   style={[
                     styles.itemLabel,
                     {
-                      color:
-                        colors.danger,
+                      color: isGuest
+                        ? colors.primary
+                        : colors.danger,
                     },
                   ]}
                 >
-                  Logout
+                  {isGuest
+                    ? "Log in"
+                    : "Logout"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -512,7 +533,7 @@ const styles = StyleSheet.create({
   },
 
   itemActive: {
-    backgroundColor: "#E9EDFB",
+    backgroundColor: "#EDEDED",
   },
 
   itemLabel: {

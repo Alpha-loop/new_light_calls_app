@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import { useMemo, useState } from "react";
 
 import {
@@ -79,7 +81,7 @@ export default function BibleScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -189,7 +191,7 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 14,
   },

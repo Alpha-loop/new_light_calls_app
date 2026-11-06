@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import { useState } from "react";
 
 import {
@@ -131,7 +133,7 @@ export default function ModernVideoDetailsScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -450,7 +452,7 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 14,
   },
@@ -506,7 +508,7 @@ const styles = StyleSheet.create({
 
     gap: 6,
 
-    backgroundColor: "#F4F3FA",
+    backgroundColor: "#F5F5F5",
 
     borderRadius: 20,
 
@@ -532,7 +534,7 @@ const styles = StyleSheet.create({
   },
 
   descriptionCard: {
-    backgroundColor: "#F4F3FA",
+    backgroundColor: "#F5F5F5",
 
     borderRadius: 14,
 

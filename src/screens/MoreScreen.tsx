@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import {
   ScrollView,
   StyleSheet,
@@ -32,7 +34,7 @@ export default function ModernSettingsScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -70,7 +72,7 @@ export default function ModernSettingsScreen({
           >
             <Church
               size={18}
-              color="#28166f"
+              color="#000000"
             />
           </View>
 
@@ -136,7 +138,7 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 14,
   },

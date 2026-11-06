@@ -113,7 +113,7 @@ export default function EventRegistrationSheet({
 
             <TouchableOpacity
               onPress={onClose}
-              hitSlop={10}
+              hitSlop={14}
               disabled={submitting}
             >
               <X size={22} color={colors.textPrimary} />

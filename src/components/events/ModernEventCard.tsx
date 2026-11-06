@@ -134,7 +134,7 @@ export default function ModernEventCard({
             onPress={
               onAddToCalendar
             }
-            hitSlop={8}
+            hitSlop={14}
           >
             <CalendarPlus
               size={20}

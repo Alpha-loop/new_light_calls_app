@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import { useState } from "react";
 
 import {
@@ -140,7 +142,7 @@ export default function ModernEditProfileScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -983,7 +985,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
 
-    backgroundColor: "#F4F3FA",
+    backgroundColor: "#F5F5F5",
   },
 
   centerWrap: {
@@ -993,7 +995,7 @@ const styles = StyleSheet.create({
 
     justifyContent: "center",
 
-    backgroundColor: "#F4F3FA",
+    backgroundColor: "#F5F5F5",
   },
 
   topBar: {
@@ -1006,7 +1008,7 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 14,
 
@@ -1026,7 +1028,7 @@ const styles = StyleSheet.create({
 
     fontWeight: "700",
 
-    color: "#28166f",
+    color: "#000000",
   },
 
   avatarWrap: {
@@ -1048,7 +1050,7 @@ const styles = StyleSheet.create({
   },
 
   avatarPlaceholder: {
-    backgroundColor: "#E9EDFB",
+    backgroundColor: "#EDEDED",
 
     alignItems: "center",
 
@@ -1068,7 +1070,7 @@ const styles = StyleSheet.create({
 
     borderRadius: 14,
 
-    backgroundColor: "#28166f",
+    backgroundColor: "#000000",
 
     alignItems: "center",
 
@@ -1076,7 +1078,7 @@ const styles = StyleSheet.create({
 
     borderWidth: 2,
 
-    borderColor: "#F4F3FA",
+    borderColor: "#F5F5F5",
   },
 
   changePhotoText: {
@@ -1086,7 +1088,7 @@ const styles = StyleSheet.create({
 
     fontWeight: "700",
 
-    color: "#28166f",
+    color: "#000000",
 
     letterSpacing: 0.3,
 
@@ -1136,7 +1138,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    backgroundColor: "#F4F3FA",
+    backgroundColor: "#F5F5F5",
 
     borderRadius: 10,
 

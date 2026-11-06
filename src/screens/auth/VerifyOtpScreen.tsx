@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import {
   KeyboardAvoidingView,
   Platform,
@@ -53,7 +55,7 @@ export default function ModernVerifyOtpScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -74,7 +76,7 @@ export default function ModernVerifyOtpScreen({
         >
           <ShieldCheck
             size={26}
-            color="#28166f"
+            color="#000000"
           />
         </View>
 
@@ -117,6 +119,8 @@ export default function ModernVerifyOtpScreen({
                   )
                 }
                 keyboardType="number-pad"
+                autoComplete="sms-otp"
+                textContentType="oneTimeCode"
                 maxLength={1}
                 style={
                   styles.otpBox
@@ -195,13 +199,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
 
-    backgroundColor: "#F4F3FA",
+    backgroundColor: "#F5F5F5",
   },
 
   topBar: {
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 8,
   },
@@ -291,7 +295,7 @@ const styles = StyleSheet.create({
   },
 
   submitButton: {
-    backgroundColor: "#28166f",
+    backgroundColor: "#000000",
 
     borderRadius: 24,
 
@@ -335,6 +339,6 @@ const styles = StyleSheet.create({
 
     fontWeight: "700",
 
-    color: "#28166f",
+    color: "#000000",
   },
 });

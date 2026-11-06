@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import { useRef } from "react";
 
 import {
@@ -220,7 +222,7 @@ export default function BibleReaderScreen({
 
             navigation.goBack();
           }}
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -258,7 +260,7 @@ export default function BibleReaderScreen({
           onPress={() =>
             fontSheetRef.current?.present()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <Text
             style={[
@@ -274,7 +276,7 @@ export default function BibleReaderScreen({
           onPress={
             handleAddNote
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <NotebookPen
             size={20}
@@ -318,6 +320,8 @@ export default function BibleReaderScreen({
           }
           contentContainerStyle={{
             padding: 20,
+
+            paddingBottom: 40,
           }}
           showsVerticalScrollIndicator={
             false
@@ -345,7 +349,7 @@ export default function BibleReaderScreen({
               onPress={
                 handleSpeech
               }
-              hitSlop={8}
+              hitSlop={14}
             >
               {speech.isSpeaking ? (
                 <StopCircle
@@ -432,7 +436,7 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 14,
   },

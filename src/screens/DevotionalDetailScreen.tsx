@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import { useRef } from "react";
 
 import {
@@ -148,7 +150,7 @@ export default function ModernDevotionalDetailScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -175,7 +177,7 @@ export default function ModernDevotionalDetailScreen({
             onPress={
               handleAddNote
             }
-            hitSlop={8}
+            hitSlop={14}
           >
             <NotebookPen
               size={20}
@@ -187,7 +189,7 @@ export default function ModernDevotionalDetailScreen({
             onPress={() =>
               toggleSaved(devotionId)
             }
-            hitSlop={8}
+            hitSlop={14}
           >
             <Bookmark
               size={20}
@@ -208,7 +210,7 @@ export default function ModernDevotionalDetailScreen({
 
           <TouchableOpacity
             onPress={onShare}
-            hitSlop={8}
+            hitSlop={14}
           >
             <Share2
               size={20}
@@ -459,7 +461,7 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 14,
   },

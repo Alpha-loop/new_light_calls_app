@@ -31,6 +31,14 @@ export default function useEvents() {
     setLoading,
   ] = useState(false);
 
+  // Pull-to-refresh state is separate from `loading` on purpose:
+  // `loading` swaps the whole screen for a spinner, which would
+  // tear down the very list being pulled.
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
+
   const user =
     useAuthStore(
       state => state.user
@@ -90,9 +98,39 @@ export default function useEvents() {
     loadEvents();
   }, [tenantId]);
 
+  const onRefresh =
+    async () => {
+      if (!tenantId) {
+        return;
+      }
+
+      setRefreshing(true);
+
+      try {
+        const response =
+          await getEvents(
+            tenantId
+          );
+
+        setEvents(
+          response?.object ??
+            []
+        );
+      } catch (error) {
+        console.log(
+          "EVENTS REFRESH ERROR:",
+          error
+        );
+      } finally {
+        setRefreshing(false);
+      }
+    };
+
   return {
     events,
     loading,
+    refreshing,
+    onRefresh,
     reloadEvents:
       loadEvents,
   };

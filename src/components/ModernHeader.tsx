@@ -26,6 +26,8 @@ import useRequireAuth from "@/modules/auth/hooks/useRequireAuth";
 
 import ModernMenuDrawer from "./ModernMenuDrawer";
 
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import { useTheme } from "@/theme/ThemeContext";
 
 interface Props {
@@ -75,6 +77,18 @@ export default function ModernHeader({
     menuVisible,
     setMenuVisible,
   ] = useState(false);
+
+  // The user's own photo wins; the church logo only fills in when
+  // there isn't one (guest, or nothing uploaded yet). `pictureUrl`
+  // can arrive as the string "null" from this backend.
+  const profilePhoto =
+    profile?.pictureUrl &&
+    profile.pictureUrl !== "null"
+      ? profile.pictureUrl
+      : undefined;
+
+  const avatarImage =
+    profilePhoto || avatarUrl;
 
   const userName = [
     profile?.firstName,
@@ -205,6 +219,23 @@ export default function ModernHeader({
 
         return;
 
+      case "Login":
+        // A guest has no session to end — "Log in" just leaves guest
+        // mode so the auth screens are registered again, then resets
+        // into Login. Same exitGuestMode()-first order the logout
+        // path above relies on (flips canAccessMain to false).
+        exitGuestMode();
+
+        setTimeout(() => {
+          navigation.reset({
+            index: 0,
+
+            routes: [{ name: "Login" }],
+          });
+        }, 0);
+
+        return;
+
       case "BibleStudy":
         navigation.navigate(
           "Bible"
@@ -222,8 +253,10 @@ export default function ModernHeader({
       style={[
         styles.container,
         {
-          paddingTop:
-            insets.top + 10,
+          paddingTop: Math.max(
+            insets.top + 14,
+            HEADER_TOP_PADDING
+          ),
 
           backgroundColor:
             colors.surface,
@@ -234,7 +267,8 @@ export default function ModernHeader({
         onPress={() =>
           setMenuVisible(true)
         }
-        hitSlop={10}
+        hitSlop={14}
+        style={styles.touch}
       >
         <Menu
           size={22}
@@ -259,17 +293,30 @@ export default function ModernHeader({
 
       <TouchableOpacity
         onPress={() =>
-          navigation.navigate(
-            "AboutChurch"
-          )
+          // The profile photo opens the user's own profile; with no
+          // photo (guest, or none uploaded) it keeps its old job of
+          // opening the church page.
+          profilePhoto
+            ? requireAuth(() =>
+                navigation.navigate(
+                  "Profile"
+                )
+              )
+            : navigation.navigate(
+                "AboutChurch"
+              )
         }
-        hitSlop={10}
+        hitSlop={14}
+        style={[
+          styles.touch,
+          styles.touchRight,
+        ]}
       >
-        {avatarUrl ? (
+        {avatarImage ? (
           <Image
               cachePolicy="memory-disk"
             source={{
-              uri: avatarUrl,
+              uri: avatarImage,
             }}
             style={styles.avatar}
           />
@@ -293,7 +340,7 @@ export default function ModernHeader({
         }
         userName={userName}
         userPhotoUrl={
-          profile?.pictureUrl
+          profilePhoto
         }
         activeRoute={
           activeRoute
@@ -333,6 +380,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
 
     marginHorizontal: 12,
+  },
+
+  touch: {
+    minWidth: 44,
+
+    minHeight: 44,
+
+    justifyContent: "center",
+  },
+
+  touchRight: {
+    alignItems: "flex-end",
   },
 
   avatar: {

@@ -57,7 +57,7 @@ export const onboardingSlides: OnboardingSlide[] =
       id: "3",
 
       image:
-        require("../../assets/fs1.png"),
+        require("../../assets/fs1.jpg"),
 
       centerIcon:
         "heart-hand",

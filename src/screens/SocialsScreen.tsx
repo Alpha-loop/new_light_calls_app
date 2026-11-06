@@ -1,8 +1,14 @@
-import { useEffect } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 import {
   AccessibilityInfo,
   ActivityIndicator,
+  Animated,
+  PanResponder,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -14,6 +20,7 @@ import { Image } from "expo-image";
 import {
   MapPin,
   UserPlus,
+  ChevronLeft,
   ChevronRight,
   Users,
   CircleCheck,
@@ -136,12 +143,97 @@ export default function ModernSocialsScreen() {
     remaining,
     hasMore,
     skip,
+    previous,
+    canGoBack,
     sendRequest,
     sending,
     feedback,
     dismissFeedback,
   } =
     useMeetupDiscovery();
+
+  // Swipe the front card: left = next member, right = previous.
+  // Handlers go through a ref so the PanResponder (created once)
+  // always calls the latest skip/previous and sees the latest
+  // sending / canGoBack values.
+  const swipeX = useRef(
+    new Animated.Value(0)
+  ).current;
+
+  const swipeRef = useRef({
+    skip,
+    previous,
+    canGoBack,
+    sending,
+  });
+
+  swipeRef.current = {
+    skip,
+    previous,
+    canGoBack,
+    sending,
+  };
+
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        // Only claim clearly horizontal drags so taps on the
+        // buttons and any vertical scrolling are left alone.
+        onMoveShouldSetPanResponder:
+          (_, g) =>
+            Math.abs(g.dx) > 12 &&
+            Math.abs(g.dx) >
+              Math.abs(g.dy) * 1.5,
+
+        onPanResponderMove:
+          Animated.event(
+            [null, { dx: swipeX }],
+            { useNativeDriver: false }
+          ),
+
+        onPanResponderRelease: (
+          _,
+          g
+        ) => {
+          const {
+            skip: goNext,
+            previous: goPrev,
+            canGoBack: hasPrev,
+            sending: busy,
+          } = swipeRef.current;
+
+          const far =
+            Math.abs(g.dx) > 90 ||
+            Math.abs(g.vx) > 0.7;
+
+          if (!busy && far) {
+            if (g.dx < 0) {
+              goNext();
+            } else if (hasPrev) {
+              goPrev();
+            }
+          }
+
+          // The next card is a new element (keyed by id), so the
+          // offset is reset straight away and it appears in place;
+          // when nothing changed, the card springs back.
+          Animated.spring(swipeX, {
+            toValue: 0,
+            useNativeDriver: false,
+            bounciness: 6,
+          }).start();
+        },
+
+        onPanResponderTerminate:
+          () => {
+            Animated.spring(swipeX, {
+              toValue: 0,
+              useNativeDriver: false,
+            }).start();
+          },
+      }),
+    [swipeX]
+  );
 
   const banner = feedback ? (
     <StatusBanner
@@ -232,6 +324,32 @@ export default function ModernSocialsScreen() {
           show right now —
           check back soon.
         </Text>
+
+        {canGoBack ? (
+          <TouchableOpacity
+            onPress={previous}
+            style={{
+              marginTop: 14,
+              paddingHorizontal: 22,
+              paddingVertical: 10,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor:
+                colors.surface,
+            }}
+          >
+            <Text
+              style={{
+                color:
+                  colors.textSecondary,
+                fontWeight: "700",
+              }}
+            >
+              Go back
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     );
   }
@@ -335,11 +453,30 @@ export default function ModernSocialsScreen() {
             );
           })}
 
-        <View
+        <Animated.View
           key={current.id}
+          {...panResponder.panHandlers}
           style={[
             styles.card,
             { backgroundColor: colors.placeholder },
+            {
+              transform: [
+                { translateX: swipeX },
+                {
+                  rotate:
+                    swipeX.interpolate({
+                      inputRange: [
+                        -200, 0, 200,
+                      ],
+                      outputRange: [
+                        "-6deg",
+                        "0deg",
+                        "6deg",
+                      ],
+                    }),
+                },
+              ],
+            },
           ]}
         >
           <PersonPhoto
@@ -389,7 +526,7 @@ export default function ModernSocialsScreen() {
               </View>
             ) : null}
           </View>
-        </View>
+        </Animated.View>
       </View>
 
       <View
@@ -397,6 +534,30 @@ export default function ModernSocialsScreen() {
           styles.actionsRow
         }
       >
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={previous}
+          disabled={
+            sending || !canGoBack
+          }
+          accessibilityLabel="Previous member"
+          style={[
+            styles.skipButton,
+            styles.prevButton,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+            (sending || !canGoBack) &&
+              styles.requestButtonDisabled,
+          ]}
+        >
+          <ChevronLeft
+            size={20}
+            color={colors.textSecondary}
+          />
+        </TouchableOpacity>
+
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={skip}
@@ -620,6 +781,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
 
     borderWidth: 1,
+  },
+
+  prevButton: {
+    paddingHorizontal: 14,
   },
 
   skipText: {

@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import {
   Alert,
   ScrollView,
@@ -535,7 +537,7 @@ const styles = StyleSheet.create({
   heroTopRow: {
     position: "absolute",
 
-    top: 54,
+    top: HEADER_TOP_PADDING,
 
     left: 16,
 

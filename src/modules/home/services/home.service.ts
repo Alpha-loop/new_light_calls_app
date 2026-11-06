@@ -1,31 +1,63 @@
 import { api } from "../../../services/apiClient";
 
+// Request body shared by the feeds / devotionals endpoints. Mirrors
+// the backend DTO: TenantId, UserId, IsPending, IsDevotional,
+// DevotionalDate, Tags, AllPost, IsRefresh. Anything not passed
+// keeps the value this app has always sent; `isRefresh` is the new
+// field and is true only for a user-initiated pull-to-refresh.
+export interface FeedQueryOptions {
+  userId?: string | null;
+
+  isPending?: boolean;
+
+  isDevotional?: boolean;
+
+  devotionalDate?: string | null;
+
+  tags?: string | null;
+
+  allPost?: boolean;
+
+  isRefresh?: boolean;
+}
+
+const buildFeedBody = (
+  tenantId: string,
+  options: FeedQueryOptions = {}
+) => ({
+  tenantId,
+
+  userId: options.userId ?? null,
+
+  isPending: options.isPending ?? true,
+
+  isDevotional:
+    options.isDevotional ?? true,
+
+  devotionalDate:
+    options.devotionalDate ?? null,
+
+  tags: options.tags ?? null,
+
+  allPost: options.allPost ?? true,
+
+  isRefresh:
+    options.isRefresh ?? false,
+});
+
 /**
  * Today's Devotional
  */
 export const getTodayDevotional =
   async (
     tenantId: string
+  ,
+    options?: FeedQueryOptions
   ) => {
     const response =
       await api.post(
         `/portal/${tenantId}/devotionals/today`,
-        {
-          tenantId,
-
-          userId: null,
-
-          isPending: true,
-
-          isDevotional: true,
-
-          devotionalDate:
-            null,
-
-          tags: null,
-
-          allPost: true,
-        }
+        buildFeedBody(tenantId, options)
       );
 
     return response.data;
@@ -37,26 +69,13 @@ export const getTodayDevotional =
 export const getDevotionals =
   async (
     tenantId: string
+  ,
+    options?: FeedQueryOptions
   ) => {
     const response =
       await api.post(
         `/portal/${tenantId}/devotionals`,
-        {
-          tenantId,
-
-          userId: null,
-
-          isPending: true,
-
-          isDevotional: true,
-
-          devotionalDate:
-            null,
-
-          tags: null,
-
-          allPost: true,
-        }
+        buildFeedBody(tenantId, options)
       );
 
     return response.data;
@@ -68,26 +87,13 @@ export const getDevotionals =
 export const getFeeds =
   async (
     tenantId: string
+  ,
+    options?: FeedQueryOptions
   ) => {
     const response =
       await api.post(
         `/portal/${tenantId}/feeds`,
-        {
-          tenantId,
-
-          userId: null,
-
-          isPending: true,
-
-          isDevotional: true,
-
-          devotionalDate:
-            null,
-
-          tags: null,
-
-          allPost: true,
-        }
+        buildFeedBody(tenantId, options)
       );
 
     console.log(

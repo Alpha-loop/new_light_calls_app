@@ -77,7 +77,9 @@ export default function useCommunityFeed() {
     setRefreshing,
   ] = useState(false);
 
-  const loadFeeds = async () => {
+  const loadFeeds = async (
+    isRefresh = false
+  ) => {
     if (!tenantId) {
       return;
     }
@@ -89,7 +91,9 @@ export default function useCommunityFeed() {
         adminResponse,
         socialResponse,
       ] = await Promise.all([
-        getFeeds(tenantId).catch(
+        getFeeds(tenantId, {
+          isRefresh,
+        }).catch(
           error => {
             console.log(
               "ADMIN FEED ERROR:",
@@ -198,9 +202,11 @@ export default function useCommunityFeed() {
   const onRefresh = async () => {
     setRefreshing(true);
 
-    await loadFeeds();
-
-    setRefreshing(false);
+    try {
+      await loadFeeds(true);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // For a post the person just created themselves — added

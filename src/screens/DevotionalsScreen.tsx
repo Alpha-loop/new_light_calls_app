@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import {
   ScrollView,
   StyleSheet,
@@ -57,7 +59,7 @@ export default function ModernDevotionalsScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -356,7 +358,7 @@ const styles = StyleSheet.create({
   topBar: {
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 8,
   },

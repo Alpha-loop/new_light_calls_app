@@ -5,6 +5,7 @@ import {
 
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -29,6 +30,8 @@ export default function ModernEventsScreen({
   const {
     events,
     loading,
+    refreshing,
+    onRefresh,
   } =
     useUpcomingEvents();
 
@@ -94,6 +97,14 @@ export default function ModernEventsScreen({
       }
       showsVerticalScrollIndicator={
         false
+      }
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.primary}
+          colors={[colors.primary]}
+        />
       }
     >
       <Text

@@ -134,7 +134,7 @@ export default function CheckInOptionsSheet({
             {view === "qr" ? (
               <TouchableOpacity
                 onPress={() => setView("menu")}
-                hitSlop={10}
+                hitSlop={14}
               >
                 <ChevronLeft
                   size={22}
@@ -156,7 +156,7 @@ export default function CheckInOptionsSheet({
 
             <TouchableOpacity
               onPress={onClose}
-              hitSlop={10}
+              hitSlop={14}
             >
               <X size={22} color={colors.textPrimary} />
             </TouchableOpacity>

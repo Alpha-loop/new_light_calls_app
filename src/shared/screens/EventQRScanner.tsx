@@ -79,7 +79,7 @@ export default function EventQRScannerScreen({ navigation }: any) {
           ? navigation.goBack()
           : navigation.navigate("Main")
       }
-      hitSlop={10}
+      hitSlop={14}
       accessibilityRole="button"
       accessibilityLabel="Go back"
       style={[

@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import { useState } from "react";
 
 import {
@@ -87,7 +89,7 @@ export default function ModernRegisterScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -164,6 +166,8 @@ export default function ModernRegisterScreen({
                 setFirstName
               }
               placeholder="Enter your first name"
+              autoComplete="given-name"
+              textContentType="givenName"
               placeholderTextColor="rgba(0,0,0,0.4)"
               style={
                 styles.input
@@ -199,6 +203,8 @@ export default function ModernRegisterScreen({
                 setLastName
               }
               placeholder="Enter your last name"
+              autoComplete="family-name"
+              textContentType="familyName"
               placeholderTextColor="rgba(0,0,0,0.4)"
               style={
                 styles.input
@@ -234,6 +240,10 @@ export default function ModernRegisterScreen({
                 setEmail
               }
               placeholder="name@example.com"
+              autoComplete="username"
+              textContentType="username"
+              importantForAutofill="yes"
+              autoCorrect={false}
               placeholderTextColor="rgba(0,0,0,0.4)"
               autoCapitalize="none"
               keyboardType="email-address"
@@ -271,6 +281,11 @@ export default function ModernRegisterScreen({
                 setPassword
               }
               placeholder="Create a password"
+              autoComplete="new-password"
+              textContentType="newPassword"
+              importantForAutofill="yes"
+              autoCapitalize="none"
+              autoCorrect={false}
               placeholderTextColor="rgba(0,0,0,0.4)"
               secureTextEntry={
                 !showPassword
@@ -286,7 +301,7 @@ export default function ModernRegisterScreen({
                   prev => !prev
                 )
               }
-              hitSlop={8}
+              hitSlop={14}
             >
               {showPassword ? (
                 <EyeOff
@@ -453,13 +468,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
 
-    backgroundColor: "#F4F3FA",
+    backgroundColor: "#F5F5F5",
   },
 
   topBar: {
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 8,
   },
@@ -477,7 +492,7 @@ const styles = StyleSheet.create({
 
     borderRadius: 30,
 
-    backgroundColor: "#28166f",
+    backgroundColor: "#000000",
 
     alignItems: "center",
 
@@ -499,7 +514,7 @@ const styles = StyleSheet.create({
 
     fontWeight: "800",
 
-    color: "#28166f",
+    color: "#000000",
   },
 
   subtitle: {
@@ -595,9 +610,9 @@ const styles = StyleSheet.create({
   },
 
   checkboxChecked: {
-    backgroundColor: "#28166f",
+    backgroundColor: "#000000",
 
-    borderColor: "#28166f",
+    borderColor: "#000000",
   },
 
   termsText: {
@@ -611,7 +626,7 @@ const styles = StyleSheet.create({
   },
 
   termsLink: {
-    color: "#28166f",
+    color: "#000000",
 
     fontWeight: "600",
   },
@@ -635,7 +650,7 @@ const styles = StyleSheet.create({
 
     gap: 8,
 
-    backgroundColor: "#28166f",
+    backgroundColor: "#000000",
 
     borderRadius: 24,
 
@@ -673,6 +688,6 @@ const styles = StyleSheet.create({
 
     fontWeight: "700",
 
-    color: "#28166f",
+    color: "#000000",
   },
 });

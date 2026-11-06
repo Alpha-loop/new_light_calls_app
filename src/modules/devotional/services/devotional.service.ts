@@ -15,6 +15,7 @@ export const getDevotionals =
           devotionalDate: null,
           tags: null,
           allPost: true,
+          isRefresh: false,
         }
       );
       console.log(response.data, "Dammy")

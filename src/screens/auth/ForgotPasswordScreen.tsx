@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import { useState } from "react";
 
 import {
@@ -53,11 +55,11 @@ export default function ModernForgotPasswordScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
-            color="#28166f"
+            color="#000000"
           />
         </TouchableOpacity>
 
@@ -87,7 +89,7 @@ export default function ModernForgotPasswordScreen({
         >
           <KeyRound
             size={24}
-            color="#28166f"
+            color="#000000"
           />
         </View>
 
@@ -123,6 +125,9 @@ export default function ModernForgotPasswordScreen({
               setEmail
             }
             placeholder="name@example.com"
+            autoComplete="email"
+            textContentType="emailAddress"
+            autoCorrect={false}
             placeholderTextColor="rgba(0,0,0,0.4)"
             autoCapitalize="none"
             keyboardType="email-address"
@@ -187,7 +192,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
 
-    backgroundColor: "#F4F3FA",
+    backgroundColor: "#F5F5F5",
   },
 
   topBar: {
@@ -200,7 +205,7 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 14,
 
@@ -212,7 +217,7 @@ const styles = StyleSheet.create({
 
     fontWeight: "700",
 
-    color: "#28166f",
+    color: "#000000",
   },
 
   scroll: {
@@ -318,7 +323,7 @@ const styles = StyleSheet.create({
 
     gap: 8,
 
-    backgroundColor: "#28166f",
+    backgroundColor: "#000000",
 
     borderRadius: 12,
 

@@ -158,7 +158,7 @@ export default function useHome() {
   }, [fullProfile]);
 
   const loadData =
-    async () => {
+    async (isRefresh = false) => {
       if(!tenantId) return;
       try {
         setLoading(true);
@@ -188,10 +188,12 @@ export default function useHome() {
           ministryProfileResult,
         ] = await Promise.allSettled([
             getTodayDevotional(
-              tenantId
+              tenantId,
+              { isRefresh }
             ),
             getFeeds(
-              tenantId
+              tenantId,
+              { isRefresh }
             ),
             getCelebrants(
               tenantId
@@ -406,11 +408,20 @@ export default function useHome() {
         true
       );
 
-      await loadData();
+      try {
+        // Pull-to-refresh: tell the backend this is a refresh
+        // (IsRefresh) and reload the YouTube list too, which the
+        // old refresh skipped.
+        await Promise.all([
+          loadData(true),
 
-      setRefreshing(
-        false
-      );
+          loadVideos(),
+        ]);
+      } finally {
+        setRefreshing(
+          false
+        );
+      }
     };
 
   return {

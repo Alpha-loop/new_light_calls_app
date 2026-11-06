@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import { useRef } from "react";
 
 import {
@@ -140,7 +142,7 @@ export default function ModernChatScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -171,7 +173,7 @@ export default function ModernChatScreen({
             onPress={
               handleAddNote
             }
-            hitSlop={8}
+            hitSlop={14}
           >
             <NotebookPen
               size={20}
@@ -192,7 +194,7 @@ export default function ModernChatScreen({
                   navigation.goBack()
               )
             }
-            hitSlop={8}
+            hitSlop={14}
             accessibilityLabel="Chat options"
           >
             <MoreHorizontal
@@ -361,7 +363,7 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 16,
 
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
 
     paddingBottom: 14,
   },

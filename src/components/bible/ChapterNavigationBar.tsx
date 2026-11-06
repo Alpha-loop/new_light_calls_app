@@ -49,18 +49,22 @@ export default function ChapterNavigationBar({
           borderTopColor: colors.border,
 
           paddingBottom:
-            10 + insets.bottom,
+            12 + insets.bottom,
         },
       ]}
     >
       <TouchableOpacity
         disabled={!hasPrevious}
         onPress={onPrevious}
-        style={{
-          opacity: hasPrevious
-            ? 1
-            : 0.3,
-        }}
+        hitSlop={8}
+        style={[
+          styles.arrow,
+          {
+            opacity: hasPrevious
+              ? 1
+              : 0.3,
+          },
+        ]}
       >
         <ChevronLeft
           size={22}
@@ -81,11 +85,15 @@ export default function ChapterNavigationBar({
       <TouchableOpacity
         disabled={!hasNext}
         onPress={onNext}
-        style={{
-          opacity: hasNext
-            ? 1
-            : 0.3,
-        }}
+        hitSlop={8}
+        style={[
+          styles.arrow,
+          {
+            opacity: hasNext
+              ? 1
+              : 0.3,
+          },
+        ]}
       >
         <ChevronRight
           size={22}
@@ -105,13 +113,27 @@ const styles = StyleSheet.create({
     justifyContent:
       "space-between",
 
-    height: 56,
+    // minHeight, not a fixed height: the old `height: 56` had to hold
+    // 10 top padding + the safe-area inset + the content, so on any
+    // phone with gesture navigation the title was clipped and the
+    // arrows sat half under the system bar.
+    minHeight: 56,
 
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
 
-    paddingTop: 10,
+    paddingTop: 8,
 
     borderTopWidth: 1,
+  },
+
+  arrow: {
+    width: 44,
+
+    height: 44,
+
+    alignItems: "center",
+
+    justifyContent: "center",
   },
 
   title: {

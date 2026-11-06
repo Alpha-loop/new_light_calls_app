@@ -243,6 +243,15 @@ export default function useMeetupDiscovery() {
     );
   };
 
+  // Step back to the member just before this one. Stops at the
+  // first card, and also works from the "no more members" end
+  // state (index === length), which brings the last member back.
+  const previous = () => {
+    setCurrentIndex(prev =>
+      Math.max(prev - 1, 0)
+    );
+  };
+
   const sendRequest =
     async () => {
       if (
@@ -358,6 +367,10 @@ export default function useMeetupDiscovery() {
       candidates.length,
 
     skip,
+
+    previous,
+
+    canGoBack: currentIndex > 0,
 
     sendRequest,
 

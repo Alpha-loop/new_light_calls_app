@@ -169,7 +169,7 @@ export default function CommunityFeedCard({
         {onMore ? (
           <TouchableOpacity
             onPress={onMore}
-            hitSlop={10}
+            hitSlop={14}
             accessibilityLabel="Post options"
           >
             <MoreHorizontal

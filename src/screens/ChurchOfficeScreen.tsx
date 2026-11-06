@@ -1,3 +1,5 @@
+import { HEADER_TOP_PADDING } from "@/theme/layout";
+
 import {
   ScrollView,
   StyleSheet,
@@ -54,7 +56,7 @@ export default function ChurchOfficeScreen({
           onPress={() =>
             navigation.goBack()
           }
-          hitSlop={8}
+          hitSlop={14}
         >
           <ChevronLeft
             size={22}
@@ -235,7 +237,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingTop: 54,
+    paddingTop: HEADER_TOP_PADDING,
     paddingBottom: 14,
   },
 
