@@ -1,4 +1,5 @@
 import {
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -30,11 +31,22 @@ import {
   OnboardingSlide,
 } from "../data/onboardingSlides";
 
+import { useTheme } from "@/theme/ThemeContext";
+import type { ColorTokens } from "@/theme/colors";
+
 export default function ModernOnboardingScreen({
   navigation,
 }: any) {
   const { width } =
     useWindowDimensions();
+
+  const { colors } = useTheme();
+
+  // Rebuilt only when the theme changes (light <-> dark).
+  const styles = useMemo(
+    () => makeStyles(colors),
+    [colors]
+  );
 
   const flatListRef =
     useRef<FlatList>(null);
@@ -122,7 +134,7 @@ export default function ModernOnboardingScreen({
             "users" ? (
               <Users
                 size={14}
-                color="#28166f"
+                color={colors.primary}
               />
             ) : null}
 
@@ -144,7 +156,7 @@ export default function ModernOnboardingScreen({
           >
             <HandHeart
               size={26}
-              color="#28166f"
+              color={colors.primary}
             />
           </View>
         ) : null}
@@ -153,6 +165,8 @@ export default function ModernOnboardingScreen({
       <Text style={styles.title}>
         {item.title}
       </Text>
+
+      <View style={styles.accentBar} />
 
       <Text
         style={
@@ -181,10 +195,13 @@ export default function ModernOnboardingScreen({
             style={
               styles.backRow
             }
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Previous slide"
           >
             <ChevronLeft
               size={18}
-              color="rgba(17, 17, 17, 0.7)"
+              color={colors.textSecondary}
             />
 
             <Text
@@ -202,6 +219,9 @@ export default function ModernOnboardingScreen({
         {!isLastSlide ? (
           <TouchableOpacity
             onPress={goToAuth}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Skip introduction"
           >
             <Text
               style={
@@ -219,6 +239,9 @@ export default function ModernOnboardingScreen({
       <FlatList
         ref={flatListRef}
         data={onboardingSlides}
+        // Slides read `styles`/`colors` from the closure; extraData
+        // makes FlatList re-render them when the theme changes.
+        extraData={colors}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={
@@ -245,6 +268,8 @@ export default function ModernOnboardingScreen({
         style={
           styles.dotsContainer
         }
+        accessible
+        accessibilityLabel={`Slide ${currentIndex + 1} of ${onboardingSlides.length}`}
       >
         {onboardingSlides.map(
           (_, index) => (
@@ -284,7 +309,7 @@ export default function ModernOnboardingScreen({
 
           <ArrowRight
             size={18}
-            color="#FFFFFF"
+            color={colors.textOnPrimary}
           />
         </TouchableOpacity>
 
@@ -304,223 +329,170 @@ export default function ModernOnboardingScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-
-    backgroundColor: "#FFFFFF",
-  },
-
-  topBar: {
-    flexDirection: "row",
-
-    justifyContent:
-      "space-between",
-
-    alignItems: "center",
-
-    paddingHorizontal: 20,
-
-    paddingTop: 8,
-
-    height: 40,
-  },
-
-  skipText: {
-    fontSize: 13,
-
-    fontWeight: "700",
-
-    color: "rgba(17, 17, 17, 0.6)",
-
-    letterSpacing: 0.5,
-  },
-
-  backRow: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    gap: 2,
-  },
-
-  backText: {
-    fontSize: 13,
-
-    fontWeight: "700",
-
-    color: "rgba(17, 17, 17, 0.7)",
-  },
-
-  slide: {
-    paddingHorizontal: 24,
-
-    paddingTop: 12,
-  },
-
-  imageWrap: {
-    width: "100%",
-
-    height: 380,
-
-    borderRadius: 20,
-
-    overflow: "hidden",
-
-    position: "relative",
-
-    marginBottom: 28,
-  },
-
-  image: {
-    width: "100%",
-
-    height: "100%",
-  },
-
-  tag: {
-    position: "absolute",
-
-    left: 14,
-
-    bottom: 14,
-
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    gap: 6,
-
-    backgroundColor: "#FFFFFF",
-
-    borderRadius: 20,
-
-    paddingHorizontal: 12,
-
-    paddingVertical: 8,
-  },
-
-  tagText: {
-    fontSize: 13,
-
-    fontWeight: "700",
-
-    color: "#28166f",
-  },
-
-  centerIconWrap: {
-    position: "absolute",
-
-    alignSelf: "center",
-
-    bottom: 24,
-
-    width: 52,
-
-    height: 52,
-
-    borderRadius: 26,
-
-    backgroundColor: "#FFFFFF",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-  },
-
-  title: {
-    fontSize: 28,
-
-    fontWeight: "800",
-
-    color: "rgba(17, 17, 17, 0.92)",
-
-    textAlign: "center",
-  },
-
-  description: {
-    fontSize: 15,
-
-    color: "rgba(0,0,0,0.55)",
-
-    textAlign: "center",
-
-    lineHeight: 22,
-
-    marginTop: 10,
-
-    paddingHorizontal: 8,
-  },
-
-  dotsContainer: {
-    flexDirection: "row",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    gap: 6,
-
-    marginTop: 12,
-  },
-
-  dot: {
-    width: 7,
-
-    height: 7,
-
-    borderRadius: 4,
-
-    backgroundColor: "rgba(0,0,0,0.15)",
-  },
-
-  activeDot: {
-    width: 22,
-
-    backgroundColor: "#000000",
-  },
-
-  bottomArea: {
-    paddingHorizontal: 24,
-
-    paddingTop: 18,
-
-    paddingBottom: 20,
-  },
-
-  button: {
-    flexDirection: "row",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    gap: 10,
-
-    backgroundColor: "#000000",
-
-    borderRadius: 26,
-
-    paddingVertical: 16,
-  },
-
-  buttonText: {
-    color: "#FFFFFF",
-
-    fontWeight: "700",
-
-    fontSize: 14,
-
-    letterSpacing: 0.5,
-  },
-
-  terms: {
-    fontSize: 12,
-
-    color: "rgba(0,0,0,0.45)",
-
-    textAlign: "center",
-
-    marginTop: 12,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+
+    topBar: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      height: 40,
+    },
+
+    skipText: {
+      fontSize: 13,
+      fontWeight: "700",
+      color: colors.textSecondary,
+      letterSpacing: 0.5,
+    },
+
+    backRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 2,
+    },
+
+    backText: {
+      fontSize: 13,
+      fontWeight: "700",
+      color: colors.textSecondary,
+    },
+
+    slide: {
+      paddingHorizontal: 24,
+      paddingTop: 12,
+    },
+
+    imageWrap: {
+      width: "100%",
+      height: 380,
+      borderRadius: 20,
+      overflow: "hidden",
+      position: "relative",
+      marginBottom: 28,
+      // Shows while the photo loads instead of a blank gap.
+      backgroundColor: colors.surfaceAlt,
+    },
+
+    image: {
+      width: "100%",
+      height: "100%",
+    },
+
+    // Chips sit on top of photos, so they use the solid surface
+    // colour (white in light mode, deep purple-grey in dark).
+    tag: {
+      position: "absolute",
+      left: 14,
+      bottom: 14,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+
+    tagText: {
+      fontSize: 13,
+      fontWeight: "700",
+      color: colors.textPrimary,
+    },
+
+    centerIconWrap: {
+      position: "absolute",
+      alignSelf: "center",
+      bottom: 24,
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      backgroundColor: colors.surface,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    title: {
+      fontSize: 28,
+      fontWeight: "800",
+      color: colors.textPrimary,
+      textAlign: "center",
+    },
+
+    // Short Dove Yellow bar under each title, matching Login.
+    accentBar: {
+      alignSelf: "center",
+      width: 40,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.accent,
+      marginTop: 12,
+    },
+
+    description: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 22,
+      marginTop: 12,
+      paddingHorizontal: 8,
+    },
+
+    dotsContainer: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 6,
+      marginTop: 12,
+    },
+
+    dot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+      backgroundColor: colors.textMuted,
+      opacity: 0.35,
+    },
+
+    activeDot: {
+      width: 22,
+      backgroundColor: colors.primary,
+      opacity: 1,
+    },
+
+    bottomArea: {
+      paddingHorizontal: 24,
+      paddingTop: 18,
+      paddingBottom: 20,
+    },
+
+    button: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: colors.primary,
+      borderRadius: 26,
+      paddingVertical: 16,
+    },
+
+    buttonText: {
+      color: colors.textOnPrimary,
+      fontWeight: "700",
+      fontSize: 14,
+      letterSpacing: 0.5,
+    },
+
+    terms: {
+      fontSize: 12,
+      color: colors.textMuted,
+      textAlign: "center",
+      marginTop: 12,
+    },
+  });

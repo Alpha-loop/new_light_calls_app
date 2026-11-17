@@ -1,3 +1,4 @@
+import { stripHtml } from "@/utils/stripHtml";
 import {
   Text,
   StyleSheet,
@@ -12,7 +13,7 @@ export default function DevotionalContent({
 }: Props) {
   return (
     <Text style={styles.content}>
-      {content}
+      {stripHtml(content)}
     </Text>
   );
 }

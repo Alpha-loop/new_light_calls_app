@@ -1,115 +1,93 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import AppCard from "@/shared/AppCard";
+import useProfileLookups from "../hooks/useProfileLookups";
 
-import {
-  UserProfile,
-} from "../types/profile.types";
+import { useTheme } from "@/theme/ThemeContext";
+
+import { UserProfile } from "../types/profile.types";
 
 interface Props {
   profile: UserProfile;
 }
 
-interface DetailRowProps {
-  label: string;
+const clean = (v?: string) => {
+  const t = v?.trim();
+  return !t || t.toLowerCase() === "null" ? "-" : t;
+};
 
-  value?: string;
-}
+export default function ProfileDetailsCard({ profile }: Props) {
+  const { colors } = useTheme();
 
-function DetailRow({
-  label,
-  value,
-}: DetailRowProps) {
+  const { maritalStatusOptions } = useProfileLookups();
+
+  // The profile often returns the status only as an ID (that's why
+  // Edit Profile knew "Married" but this card was blank).
+  const maritalName =
+    clean(profile.maritalStatus) !== "-"
+      ? profile.maritalStatus
+      : maritalStatusOptions.find(
+          m => m.id === profile.maritalStatusID
+        )?.name;
+
+  const rows: [string, string | undefined][] = [
+    ["Email", profile.email],
+    ["Phone Number", profile.mobilePhone],
+    ["Address", profile.homeAddress],
+    ["Occupation", profile.occupation],
+    ["Marital Status", maritalName],
+    ["Church Group", profile.churchGroup],
+  ];
+
   return (
-    <View style={styles.row}>
-      <Text style={styles.label}>
-        {label}
-      </Text>
-
-      <Text style={styles.value}>
-        {value?.trim() || "-"}
-      </Text>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.surface },
+      ]}
+    >
+      {rows.map(([label, value], i) => (
+        <View
+          key={label}
+          style={[
+            styles.row,
+            i < rows.length - 1 && {
+              borderBottomWidth: 1,
+              borderBottomColor: colors.divider,
+            },
+          ]}
+        >
+          <Text style={[styles.label, { color: colors.textMuted }]}>
+            {label}
+          </Text>
+          <Text
+            style={[styles.value, { color: colors.textPrimary }]}
+          >
+            {clean(value)}
+          </Text>
+        </View>
+      ))}
     </View>
   );
 }
 
-export default function ProfileDetailsCard({
-  profile,
-}: Props) {
-  return (
-    <View style={styles.container}>
-      <AppCard>
-        <DetailRow
-          label="Occupation"
-          value={
-            profile.occupation
-          }
-        />
-
-        <DetailRow
-          label="Marital Status"
-          value={
-            profile.maritalStatus
-          }
-        />
-
-        <DetailRow
-          label="Email"
-          value={
-            profile.email
-          }
-        />
-
-        <DetailRow
-          label="Phone Number"
-          value={
-            profile.mobilePhone
-          }
-        />
-
-        <DetailRow
-          label="Address"
-          value={
-            profile.homeAddress
-          }
-        />
-
-        <DetailRow
-          label="Church Group"
-          value={
-            profile.churchGroup
-          }
-        />
-      </AppCard>
-    </View>
-  );
-}
-
-const styles =
-  StyleSheet.create({
-    container: {
-      marginHorizontal: 20,
-
-      marginBottom: 20,
-    },
-
-    row: {
-      marginBottom: 12,
-    },
-
-    label: {
-      color: "#888",
-
-      fontWeight: "600",
-
-      marginBottom: 2,
-    },
-
-    value: {
-      color: "#000",
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    borderRadius: 16,
+    marginTop: 22,
+    paddingHorizontal: 14,
+  },
+  row: {
+    paddingVertical: 12,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.4,
+    marginBottom: 3,
+    textTransform: "uppercase",
+  },
+  value: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+});

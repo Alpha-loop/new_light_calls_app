@@ -1,7 +1,11 @@
+import { disableBiometric } from "@/utils/biometric";
 import {
+  useCallback,
   useEffect,
   useState,
 } from "react";
+
+import { useFocusEffect } from "@react-navigation/native";
 
 import {
   getUserProfile,
@@ -105,6 +109,8 @@ export default function useProfile() {
 
               await deleteUserAccount(user?.userId, token);
 
+              await disableBiometric();
+
               await logout();
 
               navigation.dispatch(
@@ -139,9 +145,13 @@ export default function useProfile() {
     );
   };
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  // Reload every time the screen comes back into view, so edits
+  // made on the Edit Profile screen show up straight away.
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, [user?.personId, token])
+  );
 
   return {
     profile,

@@ -70,7 +70,7 @@ export default function ChurchOfficeScreen({
             { color: colors.textPrimary },
           ]}
         >
-          Church Office
+          Prayer, Care & Requests
         </Text>
 
         <View style={{ width: 22 }} />
@@ -168,7 +168,8 @@ export default function ChurchOfficeScreen({
             yet.
           </Text>
         ) : (
-          items.map(item => (
+          <View style={styles.grid}>
+          {items.map(item => (
             <TouchableOpacity
               key={item.id}
               activeOpacity={0.9}
@@ -216,11 +217,13 @@ export default function ChurchOfficeScreen({
 
               <Text
                 style={styles.cardSubtitle}
+                numberOfLines={2}
               >
                 {item.subtitle}
               </Text>
             </TouchableOpacity>
-          ))
+          ))}
+          </View>
         )}
       </ScrollView>
     </View>
@@ -283,14 +286,21 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
   card: {
-    height: 200,
-    borderRadius: 28,
+    width: "48.5%",
+    height: 104,
+    borderRadius: 16,
     overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 24,
-    marginBottom: 14,
+    paddingHorizontal: 10,
+    marginBottom: 12,
   },
 
   shade: {
@@ -299,24 +309,25 @@ const styles = StyleSheet.create({
 
   cardTitle: {
     color: "#FFFFFF",
-    fontSize: 26,
+    fontSize: 15,
     fontWeight: "800",
     textAlign: "center",
   },
 
   underline: {
-    width: 120,
-    height: 3,
+    width: 40,
+    height: 2,
     borderRadius: 2,
     backgroundColor: ACCENT,
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: 5,
+    marginBottom: 5,
   },
 
   cardSubtitle: {
     color: "#FFFFFF",
-    fontSize: 13,
-    letterSpacing: 1.6,
+    fontSize: 10,
+    letterSpacing: 0.8,
+    textAlign: "center",
     fontWeight: "500",
   },
 

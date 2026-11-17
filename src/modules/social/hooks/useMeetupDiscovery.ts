@@ -252,10 +252,18 @@ export default function useMeetupDiscovery() {
     );
   };
 
+  const [sendingId, setSendingId] =
+    useState<string | null>(null);
+
   const sendRequest =
-    async () => {
+    async (person?: any) => {
+      const explicit =
+        person && person.id
+          ? person
+          : undefined;
+
       if (
-        !current ||
+        (!current && !explicit) ||
         sendingRef.current
       ) {
         return;
@@ -264,7 +272,9 @@ export default function useMeetupDiscovery() {
       // Captured up front: everything below must refer to the
       // person the request was actually sent to, even if the deck
       // moves while the call is in flight.
-      const target = current;
+      const target = explicit ?? current;
+
+      setSendingId(target.id);
 
       const name =
         target.fullName ||
@@ -321,7 +331,9 @@ export default function useMeetupDiscovery() {
           `Friend request sent to ${name}.`
         );
 
-        skip();
+        if (!explicit) {
+          skip();
+        }
       } catch (error: any) {
         console.log(
           "SEND REQUEST ERROR:",
@@ -341,10 +353,16 @@ export default function useMeetupDiscovery() {
         sendingRef.current = false;
 
         setSending(false);
+
+        setSendingId(null);
       }
     };
 
   return {
+    candidates,
+
+    sendingId,
+
     loading,
 
     loadError,

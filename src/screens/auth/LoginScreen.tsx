@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
+  Alert,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -28,9 +30,35 @@ import { useAuthStore } from "@/store/authStore";
 
 import { useChurchStore } from "@/store/churchStore";
 
+import {
+  authenticateAndGetCredentials,
+  confirmBiometric,
+  enableBiometric,
+  isBiometricAvailable,
+  isBiometricEnabled,
+  markPromptDismissed,
+  shouldOfferBiometric,
+} from "@/utils/biometric";
+import { useTheme } from "@/theme/ThemeContext";
+import type { ColorTokens } from "@/theme/colors";
+
+// TODO: replace with the church's real policy pages.
+const PRIVACY_URL = "https://foursquarevgc.org/privacy";
+const TERMS_URL = "https://foursquarevgc.org/terms";
+
 export default function ModernLoginScreen({
   navigation,
 }: any) {
+  // Theme colours. Adjust this line if your useTheme() returns
+  // the tokens under a different name.
+  const { colors } = useTheme();
+
+  // Rebuilt only when the theme changes (light <-> dark).
+  const styles = useMemo(
+    () => makeStyles(colors),
+    [colors]
+  );
+
   const {
     loading,
     handleLogin,
@@ -60,11 +88,84 @@ export default function ModernLoginScreen({
   const [error, setError] =
     useState("");
 
+  const [bioReady, setBioReady] =
+    useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setBioReady(
+        (await isBiometricAvailable()) &&
+          (await isBiometricEnabled())
+      );
+    })();
+  }, []);
+
+  const offerBiometric = (
+    username: string,
+    pass: string
+  ) =>
+    new Promise<void>(async resolve => {
+      if (!(await shouldOfferBiometric())) {
+        return resolve();
+      }
+
+      Alert.alert(
+        "Biometric Login",
+        "Would you like to use Face ID / Fingerprint to access LightCalls on this device?",
+        [
+          {
+            text: "Not Now",
+            style: "cancel",
+            onPress: async () => {
+              await markPromptDismissed();
+              resolve();
+            },
+          },
+          {
+            text: "Enable Biometric Login",
+            onPress: async () => {
+              try {
+                if (!(await confirmBiometric())) return resolve();
+                await enableBiometric(username, pass);
+                setBioReady(true);
+              } catch {}
+              resolve();
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    });
+
+  const onBiometricLogin = async () => {
+    try {
+      setError("");
+      const creds =
+        await authenticateAndGetCredentials();
+      if (!creds) return;
+      await handleLogin(
+        creds.username,
+        creds.password
+      );
+      navigation.replace("Main");
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          "Biometric login failed. Please sign in with your password."
+      );
+    }
+  };
+
   const onSubmit = async () => {
     try {
       setError("");
 
       await handleLogin(
+        email,
+        password
+      );
+
+      await offerBiometric(
         email,
         password
       );
@@ -104,8 +205,6 @@ export default function ModernLoginScreen({
     }, 0);
   };
 
-  console.log(fullProfile);
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -136,30 +235,27 @@ export default function ModernLoginScreen({
               // with no network dependency, unlike a remote fetch.
               // Adjust this filename if yours differs from
               // "logo.png" in the project's assets/ folder.
-              source={require("../../../assets/fsgc.png")}
-              contentFit="cover"
+              source={require("../../../assets/logo-full.png")}
+              contentFit="contain"
               style={
                 styles.logoImage
               }
             />
           </View>
 
-          <Text
-            style={
-              styles.churchName
-            }
-          >
-            {fullProfile?.churchName ||
-              "Faith Connect"}
+          <Text style={styles.churchName}>
+            FOURSQUARE GOSPEL CHURCH, VGC
           </Text>
 
-          <Text
-            style={
-              styles.subtitle
-            }
-          >
-            Welcome back to your
-            sanctuary.
+          <Text style={styles.welcome}>
+            Welcome to LightCalls
+          </Text>
+
+          {/* Short Dove Yellow bar: the one brand-accent touch on this screen */}
+          <View style={styles.accentBar} />
+
+          <Text style={styles.subtitle}>
+            Stay connected. Grow in Christ. Shine His light.
           </Text>
 
           <View
@@ -169,7 +265,7 @@ export default function ModernLoginScreen({
           >
             <Mail
               size={16}
-              color="rgba(0,0,0,0.4)"
+              color={colors.textMuted}
             />
 
             <TextInput
@@ -182,7 +278,8 @@ export default function ModernLoginScreen({
               textContentType="username"
               importantForAutofill="yes"
               autoCorrect={false}
-              placeholderTextColor="rgba(0,0,0,0.4)"
+              placeholderTextColor={colors.textMuted}
+              selectionColor={colors.primary}
               autoCapitalize="none"
               keyboardType="email-address"
               style={
@@ -198,7 +295,7 @@ export default function ModernLoginScreen({
           >
             <Lock
               size={16}
-              color="rgba(0,0,0,0.4)"
+              color={colors.textMuted}
             />
 
             <TextInput
@@ -212,7 +309,8 @@ export default function ModernLoginScreen({
               importantForAutofill="yes"
               autoCapitalize="none"
               autoCorrect={false}
-              placeholderTextColor="rgba(0,0,0,0.4)"
+              placeholderTextColor={colors.textMuted}
+              selectionColor={colors.primary}
               secureTextEntry={
                 !showPassword
               }
@@ -232,12 +330,12 @@ export default function ModernLoginScreen({
               {showPassword ? (
                 <EyeOff
                   size={16}
-                  color="rgba(0,0,0,0.4)"
+                  color={colors.textMuted}
                 />
               ) : (
                 <Eye
                   size={16}
-                  color="rgba(0,0,0,0.4)"
+                  color={colors.textMuted}
                 />
               )}
             </TouchableOpacity>
@@ -276,9 +374,10 @@ export default function ModernLoginScreen({
             activeOpacity={0.85}
             onPress={onSubmit}
             disabled={loading}
-            style={
-              styles.submitButton
-            }
+            style={[
+              styles.submitButton,
+              loading && styles.submitButtonLoading,
+            ]}
           >
             <Text
               style={
@@ -293,64 +392,34 @@ export default function ModernLoginScreen({
             {!loading ? (
               <ArrowRight
                 size={16}
-                color="#FFFFFF"
+                color={colors.textOnPrimary}
               />
             ) : null}
           </TouchableOpacity>
 
-          <View
-            style={
-              styles.dividerRow
-            }
-          >
-            <View
-              style={
-                styles.dividerLine
-              }
-            />
+          {bioReady ? (
+            <>
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or continue with</Text>
+                <View style={styles.dividerLine} />
+              </View>
 
-            <Text
-              style={
-                styles.dividerText
-              }
-            >
-              or continue with
-            </Text>
-
-            <View
-              style={
-                styles.dividerLine
-              }
-            />
-          </View>
-
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => {
-              // TODO: no biometric auth library is installed yet
-              // (e.g. expo-local-authentication) — this button is
-              // a real UI affordance with nothing behind it.
-              console.log(
-                "Biometric login pressed — not implemented yet"
-              );
-            }}
-            style={
-              styles.biometricButton
-            }
-          >
-            <Fingerprint
-              size={18}
-              color="rgba(17, 17, 17, 0.8)"
-            />
-
-            <Text
-              style={
-                styles.biometricText
-              }
-            >
-              Biometric Login
-            </Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={onBiometricLogin}
+                style={styles.biometricButton}
+              >
+                <Fingerprint
+                  size={18}
+                  color={colors.onPrimaryMuted}
+                />
+                <Text style={styles.biometricText}>
+                  Biometric Login
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
 
           <View
             style={
@@ -400,244 +469,236 @@ export default function ModernLoginScreen({
               Continue as Guest
             </Text>
           </TouchableOpacity>
+
+          <Text style={styles.legal}>
+            By continuing you agree to our{" "}
+            <Text
+              style={styles.legalLink}
+              onPress={() => Linking.openURL(PRIVACY_URL)}
+            >
+              Privacy Policy
+            </Text>{" "}
+            &{" "}
+            <Text
+              style={styles.legalLink}
+              onPress={() => Linking.openURL(TERMS_URL)}
+            >
+              Terms of Use
+            </Text>
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-
-    backgroundColor: "#F5F5F5",
-  },
-
-  scroll: {
-    flexGrow: 1,
-
-    justifyContent: "center",
-
-    padding: 24,
-  },
-
-  card: {
-    backgroundColor: "#FFFFFF",
-
-    borderRadius: 24,
-
-    padding: 24,
-
-    alignItems: "center",
-  },
-
-  iconWrap: {
-    width: 60,
-
-    height: 60,
-
-    borderRadius: 30,
-
-    backgroundColor: "#1D3AA8",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    marginBottom: 14,
-
-    overflow: "hidden",
-  },
-
-  logoImage: {
-    width: "100%",
-
-    height: "100%",
-  },
-
-  churchName: {
-    fontSize: 20,
-
-    fontWeight: "800",
-
-    color: "#000000",
-  },
-
-  subtitle: {
-    fontSize: 13,
-
-    color: "rgba(0,0,0,0.55)",
-
-    marginTop: 4,
-
-    marginBottom: 22,
-  },
-
-  inputWrap: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    gap: 10,
-
-    width: "100%",
-
-    borderWidth: 1,
-
-    borderColor: "rgba(0,0,0,0.1)",
-
-    borderRadius: 12,
-
-    paddingHorizontal: 14,
-
-    height: 48,
-
-    marginBottom: 12,
-  },
-
-  input: {
-    flex: 1,
-
-    fontSize: 14,
-
-    color: "rgba(17, 17, 17, 0.9)",
-  },
-
-  errorText: {
-    color: "#B4413C",
-
-    fontSize: 12,
-
-    alignSelf: "flex-start",
-
-    marginBottom: 8,
-  },
-
-  forgotWrap: {
-    alignSelf: "flex-end",
-
-    marginBottom: 18,
-  },
-
-  forgotText: {
-    fontSize: 12,
-
-    fontWeight: "600",
-
-    color: "#000000",
-  },
-
-  submitButton: {
-    flexDirection: "row",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    gap: 8,
-
-    backgroundColor: "#000000",
-
-    borderRadius: 24,
-
-    width: "100%",
-
-    paddingVertical: 14,
-  },
-
-  submitText: {
-    color: "#FFFFFF",
-
-    fontWeight: "700",
-
-    fontSize: 14,
-  },
-
-  dividerRow: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    gap: 10,
-
-    width: "100%",
-
-    marginVertical: 18,
-  },
-
-  dividerLine: {
-    flex: 1,
-
-    height: 1,
-
-    backgroundColor: "rgba(0,0,0,0.1)",
-  },
-
-  dividerText: {
-    fontSize: 12,
-
-    color: "rgba(0,0,0,0.45)",
-  },
-
-  biometricButton: {
-    flexDirection: "row",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    gap: 8,
-
-    backgroundColor: "#EFEEF9",
-
-    borderRadius: 24,
-
-    width: "100%",
-
-    paddingVertical: 13,
-  },
-
-  biometricText: {
-    fontSize: 13,
-
-    fontWeight: "600",
-
-    color: "rgba(17, 17, 17, 0.85)",
-  },
-
-  footer: {
-    flexDirection: "row",
-
-    marginTop: 20,
-  },
-
-  footerText: {
-    fontSize: 13,
-
-    color: "rgba(0,0,0,0.6)",
-  },
-
-  footerLink: {
-    fontSize: 13,
-
-    fontWeight: "700",
-
-    color: "#000000",
-  },
-
-  guestWrap: {
-    marginTop: 18,
-
-    alignItems: "center",
-  },
-
-  guestText: {
-    fontSize: 13,
-
-    fontWeight: "600",
-
-    color: "rgba(0,0,0,0.45)",
-
-    textDecorationLine: "underline",
-  },
-});
+// Styles are a function of the theme, so they can't live in a
+// plain module-level StyleSheet.create (there's no `colors` there).
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+
+    scroll: {
+      flexGrow: 1,
+      justifyContent: "center",
+      padding: 24,
+    },
+
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: 24,
+      alignItems: "center",
+    },
+
+    iconWrap: {
+      width: 84,
+      height: 84,
+      borderRadius: 20,
+      backgroundColor: "transparent",
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 14,
+      overflow: "hidden",
+    },
+
+    logoImage: {
+      width: "100%",
+      height: "100%",
+    },
+
+    churchName: {
+      fontSize: 12,
+      fontWeight: "700",
+      letterSpacing: 0.6,
+      textAlign: "center",
+      color: colors.primary,
+    },
+
+    welcome: {
+      fontSize: 28,
+      fontWeight: "800",
+      textAlign: "center",
+      color: colors.textPrimary,
+      marginTop: 10,
+    },
+
+    accentBar: {
+      width: 40,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.accent,
+      marginTop: 10,
+    },
+
+    subtitle: {
+      fontStyle: "italic",
+      textAlign: "center",
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginTop: 10,
+      marginBottom: 22,
+    },
+
+    inputWrap: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      width: "100%",
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      height: 48,
+      marginBottom: 12,
+    },
+
+    input: {
+      flex: 1,
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+
+    errorText: {
+      color: colors.danger,
+      fontSize: 12,
+      alignSelf: "flex-start",
+      marginBottom: 8,
+    },
+
+    forgotWrap: {
+      alignSelf: "flex-end",
+      marginBottom: 18,
+    },
+
+    forgotText: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: colors.primary,
+    },
+
+    submitButton: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: colors.primary,
+      borderRadius: 24,
+      width: "100%",
+      paddingVertical: 14,
+    },
+
+    submitButtonLoading: {
+      opacity: 0.7,
+    },
+
+    submitText: {
+      color: colors.textOnPrimary,
+      fontWeight: "700",
+      fontSize: 14,
+    },
+
+    dividerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      width: "100%",
+      marginVertical: 18,
+    },
+
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.divider,
+    },
+
+    dividerText: {
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+
+    biometricButton: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: colors.primaryMuted,
+      borderRadius: 24,
+      width: "100%",
+      paddingVertical: 13,
+    },
+
+    biometricText: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: colors.onPrimaryMuted,
+    },
+
+    footer: {
+      flexDirection: "row",
+      marginTop: 20,
+    },
+
+    footerText: {
+      fontSize: 13,
+      color: colors.textSecondary,
+    },
+
+    footerLink: {
+      fontSize: 13,
+      fontWeight: "700",
+      color: colors.primary,
+    },
+
+    legal: {
+      marginTop: 22,
+      fontSize: 11,
+      textAlign: "center",
+      color: colors.textMuted,
+    },
+
+    legalLink: {
+      fontWeight: "700",
+      textDecorationLine: "underline",
+      color: colors.textSecondary,
+    },
+
+    guestWrap: {
+      marginTop: 18,
+      alignItems: "center",
+      paddingVertical: 8, // larger tap target
+    },
+
+    guestText: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: colors.textSecondary,
+      textDecorationLine: "underline",
+    },
+  });

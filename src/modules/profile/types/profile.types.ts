@@ -11,6 +11,8 @@ export interface UserProfile {
 
   maritalStatus?: string;
 
+  maritalStatusID?: number | null;
+
   email?: string;
 
   mobilePhone?: string;

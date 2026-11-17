@@ -1,3 +1,5 @@
+import { displayPosterName } from "@/utils/posterName";
+import { stripHtml } from "@/utils/stripHtml";
 import { HEADER_TOP_PADDING } from "@/theme/layout";
 
 import { useRef } from "react";
@@ -60,10 +62,9 @@ const getPosterName = (
     .filter(Boolean)
     .join(" ");
 
-  return (
-    fullName ||
-    churchName ||
-    "Church"
+  return displayPosterName(
+    fullName,
+    churchName || "Foursquare VGC"
   );
 };
 
@@ -209,7 +210,12 @@ export default function ModernPostDetailScreen({
             { color: colors.textPrimary },
           ]}
         >
-          Post Details
+          {/announce/i.test(feed?.postCategoryName || "")
+            ? "Updates"
+            : feed?.postCategoryName &&
+              feed.postCategoryName !== "null"
+            ? feed.postCategoryName
+            : "Updates"}
         </Text>
 
         <TouchableOpacity
@@ -333,7 +339,7 @@ export default function ModernPostDetailScreen({
               { color: colors.textSecondary },
             ]}
           >
-            {feed.content}
+            {stripHtml(feed.content)}
           </Text>
 
           {feed.mediaUrl ? (

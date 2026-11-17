@@ -122,11 +122,7 @@ export default function ModernEventsScreen({
           { color: colors.textSecondary },
         ]}
       >
-        Join our community in
-        prayer, fellowship, and
-        service. Find a digital
-        sanctuary in our upcoming
-        gatherings.
+        Every gathering is an opportunity to encounter God and grow together. Find what's coming up, plan ahead and come ready to receive.
       </Text>
 
       {categories.length >

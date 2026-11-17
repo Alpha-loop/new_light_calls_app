@@ -1,3 +1,4 @@
+import { stripHtml } from "@/utils/stripHtml";
 import { HEADER_TOP_PADDING } from "@/theme/layout";
 
 import {
@@ -274,22 +275,6 @@ export default function ModernNotificationsScreen({
             </>
           ) : null}
 
-          <Text
-            style={[
-              styles.sectionTitle,
-              {
-                color: colors.textPrimary,
-                marginTop:
-                  requests.length >
-                  0
-                    ? 24
-                    : 0,
-              },
-            ]}
-          >
-            Announcements
-          </Text>
-
           {announcements.length >
           0 ? (
             announcements.map(
@@ -377,7 +362,7 @@ export default function ModernNotificationsScreen({
                       ]}
                       numberOfLines={2}
                     >
-                      {item.content}
+                      {stripHtml(item.content)}
                     </Text>
                   </View>
                 </TouchableOpacity>

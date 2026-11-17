@@ -1,7 +1,13 @@
 import { HEADER_TOP_PADDING } from "@/theme/layout";
 
+import { useEffect, useState } from "react";
+
 import {
+  Alert,
+  Linking,
+  ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -13,9 +19,24 @@ import {
   Sun,
   Moon,
   Smartphone,
+  Fingerprint,
+  ShieldCheck,
+  FileText,
+  Info,
+  ChevronRight,
 } from "lucide-react-native";
 
 import { useTheme } from "@/theme/ThemeContext";
+
+import {
+  confirmBiometric,
+  disableBiometric,
+  isBiometricAvailable,
+  isBiometricEnabled,
+} from "@/utils/biometric";
+
+const PRIVACY_URL = "https://foursquarevgc.org/privacy";
+const TERMS_URL = "https://foursquarevgc.org/terms";
 
 // Logout lives directly in the side drawer (ModernMenuDrawer/
 // ModernHeader) instead of here. Dark mode preference is the
@@ -50,6 +71,31 @@ export default function SettingsScreen({
     preference,
     setPreference,
   } = useTheme();
+
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioOn, setBioOn] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setBioAvailable(await isBiometricAvailable());
+      setBioOn(await isBiometricEnabled());
+    })();
+  }, []);
+
+  const toggleBiometric = async (next: boolean) => {
+    if (next) {
+      if (!(await confirmBiometric())) return;
+      // Credentials are captured at login; to enable later the
+      // member signs in once and accepts the prompt.
+      Alert.alert(
+        "Enable at next login",
+        "For your security, sign in with your password once more and choose \"Enable Biometric Login\" when asked."
+      );
+      return;
+    }
+    await disableBiometric();
+    setBioOn(false);
+  };
 
   return (
     <View
@@ -101,8 +147,8 @@ export default function SettingsScreen({
         />
       </View>
 
-      <View
-        style={
+      <ScrollView
+        contentContainerStyle={
           styles.content
         }
       >
@@ -194,7 +240,100 @@ export default function SettingsScreen({
             }
           )}
         </View>
-      </View>
+
+        {bioAvailable ? (
+          <>
+            <Text
+              style={[
+                styles.sectionLabel,
+                { color: colors.textMuted, marginTop: 22 },
+              ]}
+            >
+              SECURITY
+            </Text>
+
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <View style={styles.row}>
+                <Fingerprint size={18} color={colors.primary} />
+                <Text
+                  style={[
+                    styles.rowLabel,
+                    { color: colors.textPrimary, fontWeight: "600" },
+                  ]}
+                >
+                  Biometric Login
+                </Text>
+                <Switch
+                  value={bioOn}
+                  onValueChange={toggleBiometric}
+                  trackColor={{ true: colors.primary }}
+                />
+              </View>
+            </View>
+          </>
+        ) : null}
+
+        <Text
+          style={[
+            styles.sectionLabel,
+            { color: colors.textMuted, marginTop: 22 },
+          ]}
+        >
+          LEGAL
+        </Text>
+
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          {[
+            ["About LightCalls", "app:AboutLightCalls", Info],
+            ["Privacy Policy", PRIVACY_URL, ShieldCheck],
+            ["Terms of Use", TERMS_URL, FileText],
+          ].map(([label, url, Icon]: any, i) => (
+            <TouchableOpacity
+              key={label}
+              activeOpacity={0.8}
+              onPress={() =>
+                String(url).startsWith("app:")
+                  ? navigation.navigate(String(url).slice(4))
+                  : Linking.openURL(url)
+              }
+              style={[
+                styles.row,
+                i > 0 && {
+                  borderTopWidth: 1,
+                  borderTopColor: colors.divider,
+                },
+              ]}
+            >
+              <Icon size={18} color={colors.textSecondary} />
+              <Text
+                style={[
+                  styles.rowLabel,
+                  { color: colors.textPrimary, fontWeight: "600" },
+                ]}
+              >
+                {label}
+              </Text>
+              <ChevronRight size={18} color={colors.textMuted} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 }

@@ -1,3 +1,4 @@
+import { useGlobalRefresh } from "@/store/refreshStore";
 import {
   useEffect,
   useMemo,
@@ -40,6 +41,18 @@ export default function useMedia() {
 
   
 
+  const [loading, setLoading] =
+    useState(true);
+
+  // If the church profile never arrives, don't spin forever.
+  useEffect(() => {
+    const t = setTimeout(
+      () => setLoading(false),
+      8000
+    );
+    return () => clearTimeout(t);
+  }, []);
+
   const loadVideos =
     async () => {
 
@@ -61,6 +74,7 @@ export default function useMedia() {
       if (!social) {
         console.log("YouTube channel not configured.");
         setChurchMedia([]);
+        setLoading(false);
         return;
       }
 
@@ -102,6 +116,8 @@ export default function useMedia() {
           "MEDIA ERROR:",
           error
         );
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -119,6 +135,10 @@ export default function useMedia() {
   useEffect(() => {
     loadVideos();
   }, [fullProfile]);
+
+  useGlobalRefresh(() => {
+    loadVideos();
+  });
 
   /**
    * Audio endpoint not ready yet
@@ -147,6 +167,8 @@ export default function useMedia() {
     ]);
 
   return {
+    loading,
+
     searchText,
 
     setSearchText,

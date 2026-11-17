@@ -1,6 +1,6 @@
 import { HEADER_TOP_PADDING } from "@/theme/layout";
 
-import { useState } from "react";
+import { useMemo } from "react";
 
 import {
   KeyboardAvoidingView,
@@ -17,11 +17,15 @@ import {
   ChevronLeft,
   KeyRound,
   ArrowRight,
+  CheckCircle2,
 } from "lucide-react-native";
 
 import useForgotPassword from "@/modules/auth/hooks/useForgotPassword";
 
 import { useChurchStore } from "@/store/churchStore";
+
+import { useTheme } from "@/theme/ThemeContext";
+import type { ColorTokens } from "@/theme/colors";
 
 export default function ModernForgotPasswordScreen({
   navigation,
@@ -31,12 +35,21 @@ export default function ModernForgotPasswordScreen({
     setEmail,
     loading,
     error,
+    sent,
     handleResetPassword,
   } =
     useForgotPassword();
 
   const fullProfile = useChurchStore(
     state => state.fullProfile
+  );
+
+  const { colors } = useTheme();
+
+  // Rebuilt only when the theme changes (light <-> dark).
+  const styles = useMemo(
+    () => makeStyles(colors),
+    [colors]
   );
 
   return (
@@ -56,10 +69,12 @@ export default function ModernForgotPasswordScreen({
             navigation.goBack()
           }
           hitSlop={14}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <ChevronLeft
             size={22}
-            color="#000000"
+            color={colors.textPrimary}
           />
         </TouchableOpacity>
 
@@ -67,9 +82,10 @@ export default function ModernForgotPasswordScreen({
           style={
             styles.topBarTitle
           }
+          numberOfLines={1}
         >
           {fullProfile?.churchName ||
-            "Faith Connect"}
+            "LightCalls"}
         </Text>
 
         <View
@@ -89,7 +105,7 @@ export default function ModernForgotPasswordScreen({
         >
           <KeyRound
             size={24}
-            color="#000000"
+            color={colors.onPrimaryMuted}
           />
         </View>
 
@@ -128,13 +144,27 @@ export default function ModernForgotPasswordScreen({
             autoComplete="email"
             textContentType="emailAddress"
             autoCorrect={false}
-            placeholderTextColor="rgba(0,0,0,0.4)"
+            placeholderTextColor={colors.textMuted}
+            selectionColor={colors.primary}
             autoCapitalize="none"
             keyboardType="email-address"
             style={
               styles.input
             }
           />
+
+          {sent ? (
+            <View style={styles.successBox}>
+              <CheckCircle2
+                size={16}
+                color={colors.info}
+              />
+              <Text style={styles.successText}>
+                A reset link has been sent to {email.trim()}. Check your inbox
+                (and spam folder), then return to log in.
+              </Text>
+            </View>
+          ) : null}
 
           {error ? (
             <Text
@@ -149,21 +179,11 @@ export default function ModernForgotPasswordScreen({
           <TouchableOpacity
             activeOpacity={0.85}
             disabled={loading}
-            onPress={() =>
-              handleResetPassword(
-                () => {
-                  // The screen registered as "ResetPassword" in
-                  // AuthNavigator — not restyled for Modern yet,
-                  // reused as-is since no design exists for it.
-                  navigation.navigate(
-                    "ResetPassword"
-                  );
-                }
-              )
-            }
-            style={
-              styles.submitButton
-            }
+            onPress={handleResetPassword}
+            style={[
+              styles.submitButton,
+              loading && styles.submitButtonLoading,
+            ]}
           >
             <Text
               style={
@@ -172,13 +192,15 @@ export default function ModernForgotPasswordScreen({
             >
               {loading
                 ? "Sending..."
+                : sent
+                ? "Resend Link"
                 : "Send Reset Link"}
             </Text>
 
             {!loading ? (
               <ArrowRight
                 size={16}
-                color="#FFFFFF"
+                color={colors.textOnPrimary}
               />
             ) : null}
           </TouchableOpacity>
@@ -188,155 +210,135 @@ export default function ModernForgotPasswordScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-    backgroundColor: "#F5F5F5",
-  },
+    topBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingTop: HEADER_TOP_PADDING,
+      paddingBottom: 14,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
 
-  topBar: {
-    flexDirection: "row",
+    topBarTitle: {
+      flex: 1,
+      textAlign: "center",
+      marginHorizontal: 8,
+      fontSize: 16,
+      fontWeight: "700",
+      color: colors.textPrimary,
+    },
 
-    alignItems: "center",
+    scroll: {
+      padding: 24,
+      alignItems: "center",
+    },
 
-    justifyContent:
-      "space-between",
+    iconWrap: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: colors.primaryMuted,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 12,
+      marginBottom: 18,
+    },
 
-    paddingHorizontal: 16,
+    title: {
+      fontSize: 22,
+      fontWeight: "800",
+      color: colors.textPrimary,
+    },
 
-    paddingTop: HEADER_TOP_PADDING,
+    description: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 19,
+      marginTop: 8,
+      marginBottom: 24,
+      paddingHorizontal: 12,
+    },
 
-    paddingBottom: 14,
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: 18,
+      width: "100%",
+    },
 
-    backgroundColor: "#FFFFFF",
-  },
+    fieldLabel: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: colors.textMuted,
+      marginBottom: 8,
+      letterSpacing: 0.3,
+    },
 
-  topBarTitle: {
-    fontSize: 16,
+    input: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      height: 46,
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
 
-    fontWeight: "700",
+    successBox: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 8,
+      backgroundColor: colors.infoMuted,
+      borderRadius: 12,
+      padding: 12,
+      marginTop: 12,
+    },
 
-    color: "#000000",
-  },
+    successText: {
+      flex: 1,
+      fontSize: 13,
+      lineHeight: 18,
+      color: colors.info,
+    },
 
-  scroll: {
-    padding: 24,
+    errorText: {
+      color: colors.danger,
+      fontSize: 12,
+      marginTop: 8,
+    },
 
-    alignItems: "center",
-  },
+    submitButton: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      paddingVertical: 14,
+      marginTop: 14,
+    },
 
-  iconWrap: {
-    width: 64,
+    submitButtonLoading: {
+      opacity: 0.7,
+    },
 
-    height: 64,
-
-    borderRadius: 32,
-
-    backgroundColor: "#FFFFFF",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    marginTop: 12,
-
-    marginBottom: 18,
-  },
-
-  title: {
-    fontSize: 22,
-
-    fontWeight: "800",
-
-    color: "rgba(17, 17, 17, 0.92)",
-  },
-
-  description: {
-    fontSize: 13,
-
-    color: "rgba(0,0,0,0.55)",
-
-    textAlign: "center",
-
-    lineHeight: 19,
-
-    marginTop: 8,
-
-    marginBottom: 24,
-
-    paddingHorizontal: 12,
-  },
-
-  card: {
-    backgroundColor: "#FFFFFF",
-
-    borderRadius: 18,
-
-    padding: 18,
-
-    width: "100%",
-  },
-
-  fieldLabel: {
-    fontSize: 11,
-
-    fontWeight: "700",
-
-    color: "rgba(0,0,0,0.5)",
-
-    marginBottom: 8,
-
-    letterSpacing: 0.3,
-  },
-
-  input: {
-    borderWidth: 1,
-
-    borderColor: "rgba(0,0,0,0.1)",
-
-    borderRadius: 12,
-
-    paddingHorizontal: 14,
-
-    height: 46,
-
-    fontSize: 14,
-
-    color: "rgba(17, 17, 17, 0.9)",
-  },
-
-  errorText: {
-    color: "#B4413C",
-
-    fontSize: 12,
-
-    marginTop: 8,
-  },
-
-  submitButton: {
-    flexDirection: "row",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    gap: 8,
-
-    backgroundColor: "#000000",
-
-    borderRadius: 12,
-
-    paddingVertical: 14,
-
-    marginTop: 14,
-  },
-
-  submitText: {
-    color: "#FFFFFF",
-
-    fontWeight: "700",
-
-    fontSize: 13,
-  },
-});
+    submitText: {
+      color: colors.textOnPrimary,
+      fontWeight: "700",
+      fontSize: 13,
+    },
+  });

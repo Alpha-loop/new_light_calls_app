@@ -1,3 +1,4 @@
+import { useGlobalRefresh } from "@/store/refreshStore";
 import { useEffect, useState } from "react";
 
 import {
@@ -69,6 +70,10 @@ export default function useNotifications() {
   useEffect(() => {
     loadRequests();
   }, []);
+
+  useGlobalRefresh(() => {
+    loadRequests();
+  });
 
   // A guest never actually sees a request card to tap in the
   // first place — loadRequests() above already returns an empty

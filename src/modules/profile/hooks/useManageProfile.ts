@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { Alert } from "react-native";
 
@@ -32,6 +32,11 @@ export default function useManageProfile(
 
   const [imageUri, setImageUri] =
     useState("");
+
+  const imageMeta = useRef<{ name: string; type: string }>({
+    name: "profile.jpg",
+    type: "image/jpeg",
+  });
 
   const [bio, setBio] =
     useState("");
@@ -227,8 +232,7 @@ export default function useManageProfile(
       const result =
         await ImagePicker.launchImageLibraryAsync(
           {
-            mediaTypes:
-              ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ["images"],
 
             allowsEditing: true,
 
@@ -239,9 +243,14 @@ export default function useManageProfile(
         );
 
       if (!result.canceled) {
-        setImageUri(
-          result.assets[0].uri
-        );
+        const asset = result.assets[0];
+
+        imageMeta.current = {
+          name: asset.fileName || "profile.jpg",
+          type: asset.mimeType || "image/jpeg",
+        };
+
+        setImageUri(asset.uri);
       }
     };
 
@@ -386,10 +395,8 @@ export default function useManageProfile(
             "picture",
             {
               uri: imageUri,
-              name:
-                "profile.jpg",
-              type:
-                "image/jpeg",
+              name: imageMeta.current.name,
+              type: imageMeta.current.type,
             } as any
           );
         }
@@ -444,7 +451,7 @@ export default function useManageProfile(
         );
 
         navigation.goBack();
-      } catch (error) {
+      } catch (error: any) {
         console.log(
           "UPDATE PROFILE ERROR",
           error
@@ -452,7 +459,9 @@ export default function useManageProfile(
 
         Alert.alert(
           "Error",
-          "Unable to update profile."
+          error?.message
+            ? `Unable to update profile.\n\n${error.message}`
+            : "Unable to update profile."
         );
       } finally {
         setSaving(false);

@@ -12,11 +12,13 @@ import {
 
 import { Image } from "expo-image";
 
-import { Menu } from "lucide-react-native";
+import { Bell, MessageCircle, Menu, Search } from "lucide-react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useNavigation } from "@react-navigation/native";
+
+import useNotifications from "@/modules/social/hooks/useNotifications";
 
 import useProfile from "@/modules/profile/hooks/useProfile";
 
@@ -73,6 +75,10 @@ export default function ModernHeader({
   const { requireAuth } =
     useRequireAuth();
 
+  const { requests } = useNotifications();
+
+  const unread = Array.isArray(requests) ? requests.length : 0;
+
   const [
     menuVisible,
     setMenuVisible,
@@ -105,16 +111,19 @@ export default function ModernHeader({
     switch (route) {
       case "DevotionalLibrary":
       case "CommunityGroups":
+      case "MyGroups":
       case "AboutChurch":
       case "ChurchOffice":
         // Content browsing — open to guests, same "read is open,
         // write is gated" rule requireAuth() enforces everywhere
         // else in this app.
-        navigation.navigate(
-          route === "CommunityGroups"
-            ? "Community"
-            : route
-        );
+        if (route === "MyGroups") {
+          navigation.navigate("Groups", { filter: "mine" });
+        } else {
+          navigation.navigate(
+            route === "CommunityGroups" ? "Community" : route
+          );
+        }
 
         return;
 
@@ -278,59 +287,74 @@ export default function ModernHeader({
         />
       </TouchableOpacity>
 
-      <Text
-        style={[
-          styles.churchName,
-          {
-            color:
-              colors.textPrimary,
-          },
-        ]}
-        numberOfLines={1}
+      <View style={styles.titleWrap}>
+        <Text
+          style={[styles.appName, { color: colors.textPrimary }]}
+          numberOfLines={1}
+        >
+          LightCalls
+        </Text>
+        <Text
+          style={[styles.churchSub, { color: colors.textMuted }]}
+          numberOfLines={1}
+        >
+          {(churchName || "").toUpperCase()}
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Search")}
+        hitSlop={8}
+        style={styles.iconBtn}
+        accessibilityLabel="Search"
       >
-        {churchName || "Faith Connect"}
-      </Text>
+        <Search size={20} color={colors.textPrimary} />
+      </TouchableOpacity>
 
       <TouchableOpacity
         onPress={() =>
-          // The profile photo opens the user's own profile; with no
-          // photo (guest, or none uploaded) it keeps its old job of
-          // opening the church page.
-          profilePhoto
-            ? requireAuth(() =>
-                navigation.navigate(
-                  "Profile"
-                )
-              )
-            : navigation.navigate(
-                "AboutChurch"
-              )
+          requireAuth(() => navigation.navigate("Messages"), {
+            message: "Sign in to view your messages.",
+          })
         }
-        hitSlop={14}
-        style={[
-          styles.touch,
-          styles.touchRight,
-        ]}
+        hitSlop={8}
+        style={styles.iconBtn}
+        accessibilityLabel="Messages"
       >
-        {avatarImage ? (
-          <Image
-              cachePolicy="memory-disk"
-            source={{
-              uri: avatarImage,
-            }}
-            style={styles.avatar}
-          />
-        ) : (
-          <View
-            style={[
-              styles.avatar,
-              {
-                backgroundColor:
-                  colors.surfaceAlt,
-              },
-            ]}
-          />
-        )}
+        <MessageCircle size={20} color={colors.textPrimary} />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() =>
+          requireAuth(() => navigation.navigate("Notifications"), {
+            message: "Sign in to view your notifications.",
+          })
+        }
+        hitSlop={8}
+        style={styles.iconBtn}
+        accessibilityLabel="Notifications"
+      >
+        <Bell size={20} color={colors.textPrimary} />
+        {unread > 0 ? (
+          <View style={[styles.badge, { backgroundColor: colors.danger }]}>
+            <Text style={styles.badgeText}>
+              {unread > 9 ? "9+" : unread}
+            </Text>
+          </View>
+        ) : null}
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate("AboutLightCalls")}
+        hitSlop={14}
+        accessibilityLabel="About LightCalls"
+        style={[styles.touch, styles.touchRight]}
+      >
+        <Image
+          source={require("../../assets/logo-full.png")}
+          contentFit="contain"
+          style={styles.avatar}
+        />
       </TouchableOpacity>
 
       <ModernMenuDrawer
@@ -368,6 +392,47 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
 
+  titleWrap: {
+    flex: 1,
+    marginHorizontal: 8,
+  },
+
+  appName: {
+    fontSize: 16,
+    fontWeight: "800",
+  },
+
+  churchSub: {
+    fontSize: 9,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+  },
+
+  iconBtn: {
+    width: 36,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  badge: {
+    position: "absolute",
+    top: 6,
+    right: 2,
+    minWidth: 15,
+    height: 15,
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 9,
+    fontWeight: "800",
+  },
+
   churchName: {
     fontSize: 16,
 
@@ -383,7 +448,7 @@ const styles = StyleSheet.create({
   },
 
   touch: {
-    minWidth: 44,
+    minWidth: 40,
 
     minHeight: 44,
 

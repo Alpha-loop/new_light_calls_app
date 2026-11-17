@@ -3,6 +3,7 @@ import { HEADER_TOP_PADDING } from "@/theme/layout";
 import { useRef } from "react";
 
 import {
+  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
@@ -18,6 +19,7 @@ import {
   Users,
   StickyNote,
   Trash2,
+  Plus,
 } from "lucide-react-native";
 
 import moment from "moment";
@@ -37,6 +39,8 @@ export default function MyNotesScreen({
 
   const {
     notes,
+    loaded,
+    addNote,
     updateNote,
     deleteNote,
   } = useNotes();
@@ -61,6 +65,13 @@ export default function MyNotesScreen({
           note.id,
           content
         ),
+    });
+  };
+
+  const newNote = () => {
+    editorRef.current?.open({
+      existingContent: "",
+      onSave: content => addNote(content),
     });
   };
 
@@ -175,9 +186,30 @@ export default function MyNotesScreen({
           My Notes
         </Text>
 
-        <View
-          style={{ width: 22 }}
-        />
+        <TouchableOpacity
+          onPress={newNote}
+          hitSlop={12}
+          accessibilityLabel="New note"
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <Plus
+            size={18}
+            color={colors.primary}
+          />
+          <Text
+            style={{
+              color: colors.primary,
+              fontWeight: "800",
+              fontSize: 13,
+            }}
+          >
+            New
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -188,15 +220,20 @@ export default function MyNotesScreen({
           false
         }
       >
-        {notes.length === 0 ? (
+        {!loaded ? (
+          <ActivityIndicator
+            size="large"
+            color={colors.primary}
+            style={{ marginTop: 40 }}
+          />
+        ) : notes.length === 0 ? (
           <Text
             style={[
               styles.emptyText,
               { color: colors.textMuted },
             ]}
           >
-            No notes yet — you
-            can save one while
+            No notes yet — tap New to write one, or save one while
             reading a Bible
             chapter or devotional,
             or from a community

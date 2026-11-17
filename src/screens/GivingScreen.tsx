@@ -168,20 +168,11 @@ export default function ModernGivingScreen({
       >
         <Text
           style={[
-            styles.eyebrow,
-            { color: colors.primary },
-          ]}
-        >
-          STEWARDSHIP
-        </Text>
-
-        <Text
-          style={[
             styles.title,
             { color: colors.textPrimary },
           ]}
         >
-          Giving & Stewardship
+          Giving & Commitments
         </Text>
 
         <Text
@@ -191,8 +182,8 @@ export default function ModernGivingScreen({
           ]}
         >
           {churchName
-            ? `Support the mission and outreach of ${churchName}.`
-            : "Your generosity sustains our community and its outreach programs."}
+            ? `At ${churchName}, we believe in giving cheerfully, as God loves a cheerful giver.`
+            : "We believe in giving cheerfully, as God loves a cheerful giver."}
         </Text>
 
         <GivingCard
@@ -353,8 +344,8 @@ export default function ModernGivingScreen({
         pledges.pay ? (
           <GivingCard
             Icon={Megaphone}
-            title="Pledges & Campaigns"
-            subtitle="Make a pledge, or pay one you've already made."
+            title="Pledges"
+            subtitle="Make a pledge or redeem a pledge you have already made."
           >
             {pledges.make ? (
               <TouchableOpacity

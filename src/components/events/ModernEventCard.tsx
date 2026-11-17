@@ -18,6 +18,8 @@ import EventImagePlaceholder from "./EventImagePlaceholder";
 
 import moment from "moment";
 
+import { getEventImage } from "@/utils/eventImage";
+
 import { EventItem } from "@/modules/events/types/event.types";
 
 import { useTheme } from "@/theme/ThemeContext";
@@ -68,18 +70,19 @@ export default function ModernEventCard({
         },
       ]}
     >
-      {event.primaryImageUrl ? (
+      {getEventImage(event) ? (
         <Image
               cachePolicy="memory-disk"
           source={{
-            uri: event.primaryImageUrl,
+            uri: getEventImage(event) as string,
           }}
+          contentFit="contain"
           style={styles.image}
         />
       ) : (
         <EventImagePlaceholder
-          height={180}
-          style={styles.image}
+          height={56}
+          style={{ width: "100%" }}
         />
       )}
 
@@ -256,7 +259,9 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
 
-    height: 180,
+    height: 240,
+
+    backgroundColor: "rgba(128,128,128,0.12)",
   },
 
   body: {

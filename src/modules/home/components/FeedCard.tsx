@@ -1,3 +1,4 @@
+import { stripHtml } from "@/utils/stripHtml";
 import {
   StyleSheet,
   Text,
@@ -83,13 +84,13 @@ export default function FeedCard({
             styles.content
           }
         >
-          {feed.content?.length >
+          {stripHtml(feed.content).length >
           250
-            ? `${feed.content.slice(
+            ? `${stripHtml(feed.content).slice(
                 0,
                 250
               )}...`
-            : feed.content}
+            : stripHtml(feed.content)}
 
           {feed.content
             ?.length > 250 && (

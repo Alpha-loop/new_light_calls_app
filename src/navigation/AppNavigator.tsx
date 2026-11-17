@@ -22,6 +22,17 @@ import AboutChurchScreen from "@/screens/AboutChurchScreen";
 
 import MyNotesScreen from "@/screens/MyNotesScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
+import SearchScreen from "@/screens/SearchScreen";
+import GroupsScreen from "@/screens/GroupsScreen";
+import AboutLightCallsScreen from "@/screens/AboutLightCallsScreen";
+import GroupDetailsScreen from "@/screens/GroupDetailsScreen";
+import FeedCategoryScreen from "@/screens/FeedCategoryScreen";
+import ModernMediaScreen from "@/screens/MediaScreen";
+import ModernSocialsScreen from "@/screens/SocialsScreen";
+import { withPageHeader } from "@/components/PageHeader";
+
+const MediaPage = withPageHeader("Sermons & Media", ModernMediaScreen);
+const ChurchFamilyPage = withPageHeader("Church Family", ModernSocialsScreen);
 import EditProfileScreen from "@/screens/EditProfileScreen";
 import CommunityScreen from "@/screens/CommunityScreen";
 import PostDetailScreen from "@/screens/PostDetailScreen";
@@ -126,6 +137,32 @@ export default function AppNavigator() {
             component={
               ModernMainTabNavigator
             }
+          />
+
+          <Stack.Screen name="Search" component={SearchScreen} />
+
+          <Stack.Screen name="Groups" component={GroupsScreen} />
+
+          <Stack.Screen
+            name="AboutLightCalls"
+            component={AboutLightCallsScreen}
+          />
+
+          <Stack.Screen
+            name="GroupDetails"
+            component={GroupDetailsScreen}
+          />
+
+          <Stack.Screen
+            name="FeedCategory"
+            component={FeedCategoryScreen}
+          />
+
+          <Stack.Screen name="Media" component={MediaPage} />
+
+          <Stack.Screen
+            name="ChurchFamily"
+            component={ChurchFamilyPage}
           />
 
           <Stack.Screen

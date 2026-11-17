@@ -1,3 +1,4 @@
+import { useGlobalRefresh } from "@/store/refreshStore";
 import {
   useCallback,
   useEffect,
@@ -402,8 +403,15 @@ export default function useHome() {
     tenantId
   );
 
+  const bumpGlobalRefresh = useGlobalRefresh(() => {
+    loadData(true);
+    loadVideos();
+  });
+
   const onRefresh =
     async () => {
+      bumpGlobalRefresh();
+
       setRefreshing(
         true
       );

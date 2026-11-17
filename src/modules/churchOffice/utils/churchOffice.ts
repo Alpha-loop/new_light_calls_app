@@ -75,3 +75,11 @@ export const buildOfficeItems = (
         url: cleanText(form.url) || null,
       };
     });
+
+/** The "Join a Group" form from the church profile, if the church has one. */
+export const findJoinGroupItem = (
+  forms: any[] | null | undefined
+): OfficeItem | undefined =>
+  buildOfficeItems(forms).find(
+    item => /join.*group|group.*join|cell|fellowship/i.test(item.title)
+  );

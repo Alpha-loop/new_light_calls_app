@@ -1,16 +1,12 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   AccessibilityInfo,
   ActivityIndicator,
-  Animated,
-  PanResponder,
+  FlatList,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -18,13 +14,12 @@ import {
 import { Image } from "expo-image";
 
 import {
-  MapPin,
-  UserPlus,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  CircleCheck,
+  Check,
   CircleAlert,
+  CircleCheck,
+  Clock,
+  Search,
+  UserPlus,
   X,
 } from "lucide-react-native";
 
@@ -34,35 +29,49 @@ import useMeetupDiscovery, {
 
 import { useTheme } from "@/theme/ThemeContext";
 
-function PersonPhoto({
+const clean = (v?: string) => {
+  const t = v?.trim();
+  return !t || t.toLowerCase() === "null" ? "" : t;
+};
+
+function Avatar({
   photo,
-  placeholderColor,
+  name,
 }: {
   photo?: string;
-  placeholderColor: string;
+  name: string;
 }) {
-  return photo ? (
+  const { colors } = useTheme();
+  const url = clean(photo);
+
+  return url ? (
     <Image
-      key={photo}
-      recyclingKey={photo}
+      recyclingKey={url}
       cachePolicy="memory-disk"
-      transition={0}
-      source={{ uri: photo }}
-      style={styles.photo}
+      source={{ uri: url }}
+      style={styles.avatar}
     />
   ) : (
     <View
       style={[
-        styles.photo,
-        { backgroundColor: placeholderColor },
+        styles.avatar,
+        styles.avatarFallback,
+        { backgroundColor: colors.primaryMuted },
       ]}
-    />
+    >
+      <Text
+        style={{
+          color: colors.primary,
+          fontWeight: "800",
+          fontSize: 18,
+        }}
+      >
+        {(name.trim()[0] || "?").toUpperCase()}
+      </Text>
+    </View>
   );
 }
 
-// Result of the last friend request, shown over the top of the
-// screen so it never shifts the card or buttons around. Tap to
-// dismiss; the hook also clears it on a timer.
 function StatusBanner({
   feedback,
   onDismiss,
@@ -71,20 +80,10 @@ function StatusBanner({
   onDismiss: () => void;
 }) {
   const { colors } = useTheme();
+  const isError = feedback.type === "error";
+  const accent = isError ? colors.danger : colors.primary;
+  const Icon = isError ? CircleAlert : CircleCheck;
 
-  const isError =
-    feedback.type === "error";
-
-  const accent = isError
-    ? colors.danger
-    : colors.primary;
-
-  const Icon = isError
-    ? CircleAlert
-    : CircleCheck;
-
-  // accessibilityLiveRegion only exists on Android; this is what
-  // makes VoiceOver on iOS read the result out as well.
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(
       feedback.message
@@ -97,23 +96,17 @@ function StatusBanner({
       onPress={onDismiss}
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
-      accessibilityHint="Double tap to dismiss"
       style={[
         styles.banner,
         {
           backgroundColor: isError
             ? colors.dangerMuted
             : colors.primaryMuted,
-
           borderColor: accent,
         },
       ]}
     >
-      <Icon
-        size={18}
-        color={accent}
-      />
-
+      <Icon size={18} color={accent} />
       <Text
         style={[
           styles.bannerText,
@@ -122,11 +115,7 @@ function StatusBanner({
       >
         {feedback.message}
       </Text>
-
-      <X
-        size={16}
-        color={colors.textSecondary}
-      />
+      <X size={16} color={colors.textSecondary} />
     </TouchableOpacity>
   );
 }
@@ -138,119 +127,34 @@ export default function ModernSocialsScreen() {
     loading,
     loadError,
     reload,
-    current,
-    upcoming,
-    remaining,
-    hasMore,
-    skip,
-    previous,
-    canGoBack,
+    candidates,
     sendRequest,
-    sending,
+    sendingId,
     feedback,
     dismissFeedback,
-  } =
-    useMeetupDiscovery();
+  } = useMeetupDiscovery();
 
-  // Swipe the front card: left = next member, right = previous.
-  // Handlers go through a ref so the PanResponder (created once)
-  // always calls the latest skip/previous and sees the latest
-  // sending / canGoBack values.
-  const swipeX = useRef(
-    new Animated.Value(0)
-  ).current;
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
 
-  const swipeRef = useRef({
-    skip,
-    previous,
-    canGoBack,
-    sending,
-  });
-
-  swipeRef.current = {
-    skip,
-    previous,
-    canGoBack,
-    sending,
-  };
-
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        // Only claim clearly horizontal drags so taps on the
-        // buttons and any vertical scrolling are left alone.
-        onMoveShouldSetPanResponder:
-          (_, g) =>
-            Math.abs(g.dx) > 12 &&
-            Math.abs(g.dx) >
-              Math.abs(g.dy) * 1.5,
-
-        onPanResponderMove:
-          Animated.event(
-            [null, { dx: swipeX }],
-            { useNativeDriver: false }
-          ),
-
-        onPanResponderRelease: (
-          _,
-          g
-        ) => {
-          const {
-            skip: goNext,
-            previous: goPrev,
-            canGoBack: hasPrev,
-            sending: busy,
-          } = swipeRef.current;
-
-          const far =
-            Math.abs(g.dx) > 90 ||
-            Math.abs(g.vx) > 0.7;
-
-          if (!busy && far) {
-            if (g.dx < 0) {
-              goNext();
-            } else if (hasPrev) {
-              goPrev();
-            }
-          }
-
-          // The next card is a new element (keyed by id), so the
-          // offset is reset straight away and it appears in place;
-          // when nothing changed, the card springs back.
-          Animated.spring(swipeX, {
-            toValue: 0,
-            useNativeDriver: false,
-            bounciness: 6,
-          }).start();
-        },
-
-        onPanResponderTerminate:
-          () => {
-            Animated.spring(swipeX, {
-              toValue: 0,
-              useNativeDriver: false,
-            }).start();
-          },
-      }),
-    [swipeX]
-  );
-
-  const banner = feedback ? (
-    <StatusBanner
-      feedback={feedback}
-      onDismiss={
-        dismissFeedback
-      }
-    />
-  ) : null;
-
-  
+  const people = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list = [...candidates].sort((a, b) =>
+      (a.fullName || "").localeCompare(b.fullName || "")
+    );
+    if (!q) return list;
+    return list.filter(p =>
+      `${p.fullName || ""} ${clean(p.address)}`
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [candidates, query]);
 
   if (loading) {
     return (
       <View
         style={[
-          styles.centerWrap,
+          styles.center,
           { backgroundColor: colors.background },
         ]}
       >
@@ -266,100 +170,25 @@ export default function ModernSocialsScreen() {
     return (
       <View
         style={[
-          styles.centerWrap,
+          styles.center,
           { backgroundColor: colors.background },
         ]}
       >
-        <Text
-          style={[
-            styles.emptyText,
-            { color: colors.textMuted },
-          ]}
-        >
+        <Text style={{ color: colors.textMuted }}>
           {loadError}
         </Text>
-
         <TouchableOpacity
           onPress={reload}
-          style={{
-            marginTop: 14,
-            paddingHorizontal: 22,
-            paddingVertical: 10,
-            borderRadius: 20,
-            backgroundColor: colors.primary,
-          }}
+          style={[
+            styles.retry,
+            { backgroundColor: colors.primary },
+          ]}
         >
-          <Text
-            style={{
-              color: "#FFFFFF",
-              fontWeight: "700",
-            }}
-          >
-            Try again
-          </Text>
+          <Text style={styles.retryText}>Try again</Text>
         </TouchableOpacity>
       </View>
     );
   }
-
-  if (!hasMore || !current) {
-    return (
-      <View
-        style={[
-          styles.centerWrap,
-          { backgroundColor: colors.background },
-        ]}
-      >
-        {/* Sending to the last member lands here immediately, so
-            the confirmation has to be shown in this view too. */}
-        {banner}
-
-        <Text
-          style={[
-            styles.emptyText,
-            { color: colors.textMuted },
-          ]}
-        >
-          No more members to
-          show right now —
-          check back soon.
-        </Text>
-
-        {canGoBack ? (
-          <TouchableOpacity
-            onPress={previous}
-            style={{
-              marginTop: 14,
-              paddingHorizontal: 22,
-              paddingVertical: 10,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: colors.border,
-              backgroundColor:
-                colors.surface,
-            }}
-          >
-            <Text
-              style={{
-                color:
-                  colors.textSecondary,
-                fontWeight: "700",
-              }}
-            >
-              Go back
-            </Text>
-          </TouchableOpacity>
-        ) : null}
-      </View>
-    );
-  }
-
-  const alreadyRequested =
-    Boolean(
-      current.friendshipRequest
-    ) &&
-    current.friendshipRequest !==
-      "None";
 
   return (
     <View
@@ -368,497 +197,261 @@ export default function ModernSocialsScreen() {
         { backgroundColor: colors.background },
       ]}
     >
-      {banner}
-
-      {remaining > 0 ? (
-        <View
-          style={[
-            styles.countBadge,
-            { backgroundColor: colors.primaryMuted },
-          ]}
-        >
-          <Users
-            size={13}
-            color={colors.primary}
-          />
-
-          <Text
-            style={[
-              styles.countBadgeText,
-              { color: colors.primary },
-            ]}
-          >
-            {remaining}{" "}
-            more{" "}
-            {remaining === 1
-              ? "member"
-              : "members"}{" "}
-            to explore
-          </Text>
-        </View>
+      {feedback ? (
+        <StatusBanner
+          feedback={feedback}
+          onDismiss={dismissFeedback}
+        />
       ) : null}
 
-      <View
-        style={
-          styles.cardStack
-        }
-      >
-        {upcoming
-          .slice()
-          .reverse()
-          .map((item, i) => {
-            const depthFromFront =
-              upcoming.length -
-              i;
-
-            return (
-              <View
-                key={
-                  item.id ??
-                  i
-                }
-                style={[
-                  styles.peekCard,
-                  { backgroundColor: colors.placeholder },
-                  {
-                    transform: [
-                      {
-                        scale:
-                          1 -
-                          depthFromFront *
-                            0.05,
-                      },
-
-                      {
-                        translateY:
-                          depthFromFront *
-                          14,
-                      },
-                    ],
-
-                    opacity:
-                      1 -
-                      depthFromFront *
-                        0.28,
-                  },
-                ]}
-              >
-                <PersonPhoto
-                  photo={
-                    item.photo
-                  }
-                  placeholderColor={colors.placeholder}
-                />
-              </View>
-            );
-          })}
-
-        <Animated.View
-          key={current.id}
-          {...panResponder.panHandlers}
-          style={[
-            styles.card,
-            { backgroundColor: colors.placeholder },
-            {
-              transform: [
-                { translateX: swipeX },
-                {
-                  rotate:
-                    swipeX.interpolate({
-                      inputRange: [
-                        -200, 0, 200,
-                      ],
-                      outputRange: [
-                        "-6deg",
-                        "0deg",
-                        "6deg",
-                      ],
-                    }),
-                },
-              ],
-            },
-          ]}
-        >
-          <PersonPhoto
-            photo={
-              current.photo
-            }
-            placeholderColor={colors.placeholder}
-          />
-
-          {/* Overlays the person's photo — white text on a dark
-              overlay stays correct regardless of theme. */}
+      <View style={styles.headerRow}>
+        {searching ? (
           <View
-            style={
-              styles.overlay
-            }
-          >
-            <Text
-              style={
-                styles.name
-              }
-              numberOfLines={1}
-            >
-              {current.fullName}
-            </Text>
-
-            {current.address ? (
-              <View
-                style={
-                  styles.locationRow
-                }
-              >
-                <MapPin
-                  size={14}
-                  color="rgba(255,255,255,0.85)"
-                />
-
-                <Text
-                  style={
-                    styles.locationText
-                  }
-                  numberOfLines={1}
-                >
-                  {
-                    current.address
-                  }
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        </Animated.View>
-      </View>
-
-      <View
-        style={
-          styles.actionsRow
-        }
-      >
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={previous}
-          disabled={
-            sending || !canGoBack
-          }
-          accessibilityLabel="Previous member"
-          style={[
-            styles.skipButton,
-            styles.prevButton,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-            (sending || !canGoBack) &&
-              styles.requestButtonDisabled,
-          ]}
-        >
-          <ChevronLeft
-            size={20}
-            color={colors.textSecondary}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={skip}
-          disabled={sending}
-          style={[
-            styles.skipButton,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-            sending &&
-              styles.requestButtonDisabled,
-          ]}
-        >
-          <ChevronRight
-            size={18}
-            color={colors.textSecondary}
-          />
-
-          <Text
             style={[
-              styles.skipText,
-              { color: colors.textSecondary },
+              styles.searchBox,
+              { backgroundColor: colors.surface },
             ]}
           >
-            Next
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.85}
-          disabled={
-            alreadyRequested ||
-            sending
-          }
-          onPress={
-            sendRequest
-          }
-          style={[
-            styles.requestButton,
-            { backgroundColor: colors.primary },
-            alreadyRequested &&
-              styles.requestButtonDisabled,
-            sending &&
-              styles.requestButtonSending,
-          ]}
-        >
-          {sending ? (
-            <ActivityIndicator
-              size="small"
-              color="#FFFFFF"
+            <Search size={16} color={colors.textMuted} />
+            <TextInput
+              autoFocus
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search members"
+              placeholderTextColor={colors.textMuted}
+              style={[
+                styles.searchInput,
+                { color: colors.textPrimary },
+              ]}
             />
-          ) : (
-            <UserPlus
-              size={18}
-              color="#FFFFFF"
-            />
-          )}
-
-          <Text
-            style={
-              styles.requestText
-            }
-          >
-            {sending
-              ? "Sending..."
-              : alreadyRequested
-              ? "Request Sent"
-              : "Send Friend Request"}
-          </Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              hitSlop={12}
+              onPress={() => {
+                setQuery("");
+                setSearching(false);
+              }}
+            >
+              <X size={16} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <Text
+              style={[
+                styles.heading,
+                { color: colors.textPrimary },
+              ]}
+            >
+              Church Family
+            </Text>
+            <TouchableOpacity
+              hitSlop={12}
+              onPress={() => setSearching(true)}
+              accessibilityLabel="Search members"
+              style={[
+                styles.searchBtn,
+                { backgroundColor: colors.primaryMuted },
+              ]}
+            >
+              <Search size={18} color={colors.primary} />
+            </TouchableOpacity>
+          </>
+        )}
       </View>
+
+      <FlatList
+        data={people}
+        keyExtractor={item => String(item.id)}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 30 }}
+        ListEmptyComponent={
+          <Text
+            style={[
+              styles.empty,
+              { color: colors.textMuted },
+            ]}
+          >
+            {query
+              ? "No members match your search."
+              : "No members to show right now."}
+          </Text>
+        }
+        ItemSeparatorComponent={() => (
+          <View
+            style={[
+              styles.sep,
+              { backgroundColor: colors.divider },
+            ]}
+          />
+        )}
+        renderItem={({ item }) => {
+          const status = clean(item.friendshipRequest);
+          const isPending = /pending/i.test(status);
+          const isFriend = /accept|friend|connected/i.test(
+            status
+          );
+          const busy = sendingId === item.id;
+          const sub = clean(item.address);
+
+          return (
+            <View style={styles.row}>
+              <Avatar
+                photo={item.photo}
+                name={item.fullName || ""}
+              />
+
+              <View style={{ flex: 1 }}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.name,
+                    { color: colors.textPrimary },
+                  ]}
+                >
+                  {item.fullName}
+                </Text>
+                {sub ? (
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.sub,
+                      { color: colors.textMuted },
+                    ]}
+                  >
+                    {sub}
+                  </Text>
+                ) : null}
+              </View>
+
+              {isFriend ? (
+                <Check size={18} color={colors.primary} />
+              ) : isPending ? (
+                <View style={styles.pending}>
+                  <Clock
+                    size={14}
+                    color={colors.textMuted}
+                  />
+                  <Text
+                    style={{
+                      color: colors.textMuted,
+                      fontSize: 12,
+                    }}
+                  >
+                    Pending
+                  </Text>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  disabled={busy}
+                  onPress={() => sendRequest(item)}
+                  style={[
+                    styles.addBtn,
+                    { backgroundColor: colors.primary },
+                  ]}
+                >
+                  {busy ? (
+                    <ActivityIndicator
+                      size="small"
+                      color="#FFFFFF"
+                    />
+                  ) : (
+                    <>
+                      <UserPlus size={14} color="#FFFFFF" />
+                      <Text style={styles.addText}>Add</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+          );
+        }}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  container: { flex: 1 },
+  center: {
     flex: 1,
-
-    padding: 16,
-  },
-
-  centerWrap: {
-    flex: 1,
-
     alignItems: "center",
-
     justifyContent: "center",
-
     padding: 24,
   },
-
-  emptyText: {
-    fontSize: 14,
-
-    textAlign: "center",
-  },
-
-  countBadge: {
+  headerRow: {
     flexDirection: "row",
-
     alignItems: "center",
-
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minHeight: 60,
+  },
+  heading: { fontSize: 20, fontWeight: "800" },
+  searchBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
     justifyContent: "center",
-
-    gap: 6,
-
-    alignSelf: "center",
-
-    borderRadius: 20,
-
-    paddingHorizontal: 14,
-
-    paddingVertical: 7,
-
-    marginBottom: 14,
   },
-
-  countBadgeText: {
-    fontSize: 12,
-
-    fontWeight: "700",
-  },
-
-  cardStack: {
+  searchBox: {
     flex: 1,
-  },
-
-  card: {
-    flex: 1,
-
-    borderRadius: 20,
-
-    overflow: "hidden",
-  },
-
-  peekCard: {
-    position: "absolute",
-
-    top: 0,
-
-    left: 0,
-
-    right: 0,
-
-    bottom: 0,
-
-    borderRadius: 20,
-
-    overflow: "hidden",
-  },
-
-  photo: {
-    width: "100%",
-
-    height: "100%",
-  },
-
-  overlay: {
-    position: "absolute",
-
-    bottom: 0,
-
-    left: 0,
-
-    right: 0,
-
-    padding: 20,
-
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
-
-  name: {
-    fontSize: 22,
-
-    fontWeight: "800",
-
-    color: "#FFFFFF",
-  },
-
-  locationRow: {
     flexDirection: "row",
-
     alignItems: "center",
-
-    gap: 6,
-
-    marginTop: 6,
-  },
-
-  locationText: {
-    fontSize: 13,
-
-    color: "rgba(255,255,255,0.85)",
-
-    flex: 1,
-  },
-
-  actionsRow: {
-    flexDirection: "row",
-
-    gap: 10,
-
-    marginTop: 16,
-  },
-
-  skipButton: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    gap: 6,
-
-    borderRadius: 24,
-
-    paddingVertical: 14,
-
-    paddingHorizontal: 20,
-
-    borderWidth: 1,
-  },
-
-  prevButton: {
-    paddingHorizontal: 14,
-  },
-
-  skipText: {
-    fontSize: 14,
-
-    fontWeight: "700",
-  },
-
-  requestButton: {
-    flex: 1,
-
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
     gap: 8,
-
-    borderRadius: 24,
-
-    paddingVertical: 14,
+    borderRadius: 22,
+    paddingHorizontal: 14,
+    height: 42,
   },
-
-  requestButtonDisabled: {
-    opacity: 0.5,
+  searchInput: { flex: 1, fontSize: 14, padding: 0 },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-
-  // Busy, not unavailable — dimmed less than a disabled button.
-  requestButtonSending: {
-    opacity: 0.85,
+  avatar: { width: 48, height: 48, borderRadius: 24 },
+  avatarFallback: {
+    alignItems: "center",
+    justifyContent: "center",
   },
-
+  name: { fontSize: 15, fontWeight: "700" },
+  sub: { fontSize: 12, marginTop: 2 },
+  sep: { height: 1, marginLeft: 76 },
+  addBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    minWidth: 62,
+    justifyContent: "center",
+  },
+  addText: { color: "#FFFFFF", fontWeight: "700", fontSize: 12 },
+  pending: { flexDirection: "row", alignItems: "center", gap: 4 },
+  empty: { textAlign: "center", paddingVertical: 40, fontSize: 13 },
+  retry: {
+    marginTop: 14,
+    paddingHorizontal: 22,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  retryText: { color: "#FFFFFF", fontWeight: "700" },
   banner: {
     position: "absolute",
-
     top: 8,
-
     left: 16,
-
     right: 16,
-
     zIndex: 10,
-
     flexDirection: "row",
-
     alignItems: "center",
-
     gap: 10,
-
     borderRadius: 14,
-
     borderWidth: 1,
-
     paddingHorizontal: 14,
-
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
-
-  bannerText: {
-    flex: 1,
-
-    fontSize: 13,
-
-    fontWeight: "600",
-
-    lineHeight: 18,
-  },
-
-  requestText: {
-    fontSize: 14,
-
-    fontWeight: "700",
-
-    color: "#FFFFFF",
-  },
+  bannerText: { flex: 1, fontSize: 13, fontWeight: "600" },
 });

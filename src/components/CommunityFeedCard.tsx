@@ -1,3 +1,4 @@
+import { displayPosterName } from "@/utils/posterName";
 import {
   StyleSheet,
   Text,
@@ -46,10 +47,9 @@ const getPosterName = (
     .filter(Boolean)
     .join(" ");
 
-  return (
-    fullName ||
-    churchName ||
-    "Church"
+  return displayPosterName(
+    fullName,
+    churchName || "Foursquare VGC"
   );
 };
 

@@ -1,3 +1,4 @@
+import { stripHtml } from "@/utils/stripHtml";
 import {
   StyleSheet,
   Text,
@@ -86,7 +87,7 @@ export default function CommunitySection({
         ]}
         numberOfLines={3}
       >
-        {feed.content}
+        {stripHtml(feed.content)}
       </Text>
 
       <View style={styles.footerRow}>

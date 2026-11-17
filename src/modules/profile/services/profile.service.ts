@@ -36,16 +36,31 @@ export const updateProfile = async (
   formData: FormData,
   token: string
 ) => {
-  const res = await api.put(
-    `/portal/Profile/${id}`,
-    formData,
+  // fetch, not axios: on React Native a hand-set multipart
+  // Content-Type has no boundary and the upload can fail, while
+  // fetch builds the header itself.
+  const res = await fetch(
+    `${process.env.EXPO_PUBLIC_API_URL}/portal/Profile/${id}`,
     {
+      method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
+        Accept: "application/json",
       },
+      body: formData,
     }
   );
 
-  return res.data;
+  let json: any = null;
+  try {
+    json = await res.json();
+  } catch {}
+
+  if (!res.ok || json?.status === false) {
+    throw new Error(
+      json?.message || `Upload failed (${res.status})`
+    );
+  }
+
+  return json;
 };

@@ -1,61 +1,60 @@
 import { useState } from "react";
 
+import { forgotPassword } from "../services/auth.service";
+
+import { useChurchStore } from "../../../store/churchStore";
+
 export default function useForgotPassword() {
-  const [email, setEmail] =
-    useState("");
+  const tenantId = useChurchStore(state => state.tenantId);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [sent, setSent] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const handleResetPassword = async () => {
+    const trimmed = email.trim();
 
-  const handleResetPassword =
-    async (
-      onSuccess?: () => void
-    ) => {
-      if (!email.trim()) {
+    if (!trimmed) {
+      setError("Please enter your email address");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const res = await forgotPassword({
+        email: trimmed,
+        tenantId,
+      });
+
+      // This backend can answer 200 with status:false.
+      if (res?.status === false) {
         setError(
-          "Please enter your email address"
+          res?.message || "Unable to send reset link"
         );
-
         return;
       }
 
-      try {
-        setLoading(true);
-
-        /**
-         * API call later
-         */
-
-        await new Promise(
-          (resolve) =>
-            setTimeout(
-              resolve,
-              1000
-            )
-        );
-
-        onSuccess?.();
-      } catch {
-        setError(
-          "Unable to process request"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+      setSent(true);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          "Unable to process request. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
     email,
     setEmail,
-
     loading,
-
     error,
     setError,
-
+    sent,
     handleResetPassword,
   };
 }

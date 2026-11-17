@@ -208,6 +208,13 @@ module.exports = {
 
     plugins: [
       "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          faceIDPermission:
+            "Allow LightCalls to use Face ID so you can log in quickly and securely.",
+        },
+      ],
       "expo-web-browser",
       "expo-video",
 
@@ -259,6 +266,5 @@ module.exports = {
           EAS_PROJECT_ID,
       },
     },
-    "owner": "alpha-loop"
   },
 };

@@ -1,6 +1,6 @@
 import { HEADER_TOP_PADDING } from "@/theme/layout";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 import {
   KeyboardAvoidingView,
@@ -30,6 +30,9 @@ import useRegister from "@/modules/auth/hooks/useRegister";
 
 import { useChurchStore } from "@/store/churchStore";
 
+import { useTheme } from "@/theme/ThemeContext";
+import type { ColorTokens } from "@/theme/colors";
+
 export default function ModernRegisterScreen({
   navigation,
 }: any) {
@@ -50,6 +53,14 @@ export default function ModernRegisterScreen({
 
   const fullProfile = useChurchStore(
     state => state.fullProfile
+  );
+
+  const { colors } = useTheme();
+  
+    // Rebuilt only when the theme changes (light <-> dark).
+  const styles = useMemo(
+    () => makeStyles(colors),
+    [colors]
   );
 
   const [
@@ -90,10 +101,12 @@ export default function ModernRegisterScreen({
             navigation.goBack()
           }
           hitSlop={14}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <ChevronLeft
             size={22}
-            color="rgba(17, 17, 17, 0.8)"
+            color={colors.textPrimary}
           />
         </TouchableOpacity>
       </View>
@@ -135,7 +148,7 @@ export default function ModernRegisterScreen({
         >
           Join the{" "}
           {fullProfile?.churchName ||
-            "Faith Connect"}{" "}
+            "LightCalls"}{" "}
           digital sanctuary.
         </Text>
 
@@ -157,7 +170,7 @@ export default function ModernRegisterScreen({
           >
             <User
               size={16}
-              color="rgba(0,0,0,0.4)"
+              color={colors.textMuted}
             />
 
             <TextInput
@@ -168,7 +181,8 @@ export default function ModernRegisterScreen({
               placeholder="Enter your first name"
               autoComplete="given-name"
               textContentType="givenName"
-              placeholderTextColor="rgba(0,0,0,0.4)"
+              placeholderTextColor={colors.textMuted}
+              selectionColor={colors.primary}
               style={
                 styles.input
               }
@@ -194,7 +208,7 @@ export default function ModernRegisterScreen({
           >
             <User
               size={16}
-              color="rgba(0,0,0,0.4)"
+              color={colors.textMuted}
             />
 
             <TextInput
@@ -205,7 +219,8 @@ export default function ModernRegisterScreen({
               placeholder="Enter your last name"
               autoComplete="family-name"
               textContentType="familyName"
-              placeholderTextColor="rgba(0,0,0,0.4)"
+              placeholderTextColor={colors.textMuted}
+              selectionColor={colors.primary}
               style={
                 styles.input
               }
@@ -231,7 +246,7 @@ export default function ModernRegisterScreen({
           >
             <Mail
               size={16}
-              color="rgba(0,0,0,0.4)"
+              color={colors.textMuted}
             />
 
             <TextInput
@@ -244,7 +259,8 @@ export default function ModernRegisterScreen({
               textContentType="username"
               importantForAutofill="yes"
               autoCorrect={false}
-              placeholderTextColor="rgba(0,0,0,0.4)"
+              placeholderTextColor={colors.textMuted}
+              selectionColor={colors.primary}
               autoCapitalize="none"
               keyboardType="email-address"
               style={
@@ -272,7 +288,7 @@ export default function ModernRegisterScreen({
           >
             <Lock
               size={16}
-              color="rgba(0,0,0,0.4)"
+              color={colors.textMuted}
             />
 
             <TextInput
@@ -286,7 +302,8 @@ export default function ModernRegisterScreen({
               importantForAutofill="yes"
               autoCapitalize="none"
               autoCorrect={false}
-              placeholderTextColor="rgba(0,0,0,0.4)"
+              placeholderTextColor={colors.textMuted}
+              selectionColor={colors.primary}
               secureTextEntry={
                 !showPassword
               }
@@ -306,12 +323,12 @@ export default function ModernRegisterScreen({
               {showPassword ? (
                 <EyeOff
                   size={16}
-                  color="rgba(0,0,0,0.4)"
+                  color={colors.textMuted}
                 />
               ) : (
                 <Eye
                   size={16}
-                  color="rgba(0,0,0,0.4)"
+                  color={colors.textMuted}
                 />
               )}
             </TouchableOpacity>
@@ -339,7 +356,7 @@ export default function ModernRegisterScreen({
             {agreedToTerms ? (
               <Check
                 size={12}
-                color="#FFFFFF"
+                color={colors.textOnPrimary}
               />
             ) : null}
           </View>
@@ -426,7 +443,7 @@ export default function ModernRegisterScreen({
           {!loading ? (
             <ArrowRight
               size={16}
-              color="#FFFFFF"
+              color={colors.textOnPrimary}
             />
           ) : null}
         </TouchableOpacity>
@@ -464,11 +481,11 @@ export default function ModernRegisterScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ColorTokens) => StyleSheet.create({
   container: {
     flex: 1,
 
-    backgroundColor: "#F5F5F5",
+    backgroundColor: colors.background,
   },
 
   topBar: {
@@ -492,7 +509,11 @@ const styles = StyleSheet.create({
 
     borderRadius: 30,
 
-    backgroundColor: "#000000",
+    backgroundColor: colors.surface,
+
+    borderWidth: 1,
+
+    borderColor: colors.border,
 
     alignItems: "center",
 
@@ -514,13 +535,13 @@ const styles = StyleSheet.create({
 
     fontWeight: "800",
 
-    color: "#000000",
+    color: colors.textPrimary,
   },
 
   subtitle: {
     fontSize: 13,
 
-    color: "rgba(0,0,0,0.55)",
+    color: colors.textSecondary,
 
     textAlign: "center",
 
@@ -540,7 +561,7 @@ const styles = StyleSheet.create({
 
     fontWeight: "700",
 
-    color: "rgba(0,0,0,0.5)",
+    color: colors.textMuted,
 
     marginBottom: 8,
 
@@ -558,7 +579,7 @@ const styles = StyleSheet.create({
 
     borderWidth: 1,
 
-    borderColor: "rgba(0,0,0,0.1)",
+    borderColor: colors.border,
 
     borderRadius: 12,
 
@@ -566,7 +587,7 @@ const styles = StyleSheet.create({
 
     height: 48,
 
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.surface,
   },
 
   input: {
@@ -574,7 +595,7 @@ const styles = StyleSheet.create({
 
     fontSize: 14,
 
-    color: "rgba(17, 17, 17, 0.9)",
+    color: colors.textPrimary,
   },
 
   termsRow: {
@@ -600,7 +621,7 @@ const styles = StyleSheet.create({
 
     borderWidth: 1,
 
-    borderColor: "rgba(0,0,0,0.25)",
+    borderColor: colors.textMuted,
 
     alignItems: "center",
 
@@ -610,9 +631,9 @@ const styles = StyleSheet.create({
   },
 
   checkboxChecked: {
-    backgroundColor: "#000000",
+    backgroundColor: colors.primary,
 
-    borderColor: "#000000",
+    borderColor: colors.primary,
   },
 
   termsText: {
@@ -620,19 +641,19 @@ const styles = StyleSheet.create({
 
     fontSize: 12,
 
-    color: "rgba(0,0,0,0.6)",
+    color: colors.textSecondary,
 
     lineHeight: 18,
   },
 
   termsLink: {
-    color: "#000000",
+    color: colors.primary,
 
     fontWeight: "600",
   },
 
   errorText: {
-    color: "#B4413C",
+    color: colors.danger,
 
     fontSize: 12,
 
@@ -650,7 +671,7 @@ const styles = StyleSheet.create({
 
     gap: 8,
 
-    backgroundColor: "#000000",
+    backgroundColor: colors.primary,
 
     borderRadius: 24,
 
@@ -664,7 +685,7 @@ const styles = StyleSheet.create({
   },
 
   submitText: {
-    color: "#FFFFFF",
+    color: colors.textOnPrimary,
 
     fontWeight: "700",
 
@@ -680,7 +701,7 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 13,
 
-    color: "rgba(0,0,0,0.6)",
+    color: colors.textSecondary,
   },
 
   footerLink: {
@@ -688,6 +709,6 @@ const styles = StyleSheet.create({
 
     fontWeight: "700",
 
-    color: "#000000",
+    color: colors.primary,
   },
 });

@@ -51,20 +51,8 @@ interface Props {
 
 const PRIMARY_ITEMS = [
   {
-    key: "DevotionalLibrary",
-    label: "Devotionals",
-    Icon: BookOpen,
-  },
-
-  {
-    key: "Messages",
-    label: "Messages",
-    Icon: MessageCircle,
-  },
-
-  {
     key: "Profile",
-    label: "Profile",
+    label: "My Profile",
     Icon: User,
   },
 
@@ -83,32 +71,27 @@ const PRIMARY_ITEMS = [
 
 const RESOURCE_ITEMS = [
   {
-    key: "BibleStudy",
-    label: "Bible Study",
-    Icon: BookOpen,
+    key: "MyNotes",
+    label: "My Notes",
+    Icon: StickyNote,
   },
 
   {
-    key: "CommunityGroups",
-    label: "Community",
+    key: "MyGroups",
+    label: "My Groups",
     Icon: Users,
   },
 
-  {
-    key: "AboutChurch",
-    label: "About",
-    Icon: Info,
-  },
   { 
     key: "ChurchOffice", 
-    label: "Church Office", 
+    label: "Prayer, Care & Requests", 
     Icon: Building2 
   },
 
   {
-    key: "MyNotes",
-    label: "My Notes",
-    Icon: StickyNote,
+    key: "AboutChurch",
+    label: "About Us",
+    Icon: Info,
   },
 ];
 
@@ -232,6 +215,15 @@ export default function ModernMenuDrawer({
               </TouchableOpacity>
             </View>
 
+            <Text
+              style={[
+                styles.sectionLabel,
+                { color: colors.textMuted },
+              ]}
+            >
+              ACCOUNT
+            </Text>
+
             <View
               style={
                 styles.section
@@ -315,7 +307,7 @@ export default function ModernMenuDrawer({
                 },
               ]}
             >
-              RESOURCES
+              MY ACTIVITY
             </Text>
 
             <View

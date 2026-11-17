@@ -1,3 +1,4 @@
+import { useGlobalRefresh } from "@/store/refreshStore";
 // modules/events/hooks/useEvents.ts
 
 import {
@@ -98,11 +99,17 @@ export default function useEvents() {
     loadEvents();
   }, [tenantId]);
 
+  const bumpGlobalRefresh = useGlobalRefresh(() => {
+    loadEvents();
+  });
+
   const onRefresh =
     async () => {
       if (!tenantId) {
         return;
       }
+
+      bumpGlobalRefresh();
 
       setRefreshing(true);
 

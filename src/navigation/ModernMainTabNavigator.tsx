@@ -4,16 +4,17 @@ import {
 
 import {
   Home,
-  PlayCircle,
+  Sprout,
+  Users,
   Calendar,
   Gift,
 } from "lucide-react-native";
 
-// Home is the only tab with its own Faith/Socials split — see
-// ModernHomeTab.tsx.
-import ModernHomeTab from "./ModernHomeTab";
+import HomeDashboardScreen from "../screens/HomeDashboardScreen";
 
-import ModernMediaScreen from "../screens/MediaScreen";
+import GrowScreen from "../screens/GrowScreen";
+
+import ConnectScreen from "../screens/ConnectScreen";
 
 import ModernEventsScreen from "../screens/EventsScreen";
 
@@ -55,14 +56,26 @@ function ModernGivingTab(
   );
 }
 
-function ModernMediaTab(
-  props: any
-) {
+function HomeTab(props: any) {
   return (
     <ModernScreenWithHeader>
-      <ModernMediaScreen
-        {...props}
-      />
+      <HomeDashboardScreen {...props} />
+    </ModernScreenWithHeader>
+  );
+}
+
+function GrowTab(props: any) {
+  return (
+    <ModernScreenWithHeader>
+      <GrowScreen {...props} />
+    </ModernScreenWithHeader>
+  );
+}
+
+function ConnectTab(props: any) {
+  return (
+    <ModernScreenWithHeader>
+      <ConnectScreen {...props} />
     </ModernScreenWithHeader>
   );
 }
@@ -130,16 +143,12 @@ export default function ModernMainTabNavigator() {
             );
           }
 
-          if (
-            route.name ===
-            "Media"
-          ) {
-            return (
-              <PlayCircle
-                size={size}
-                color={color}
-              />
-            );
+          if (route.name === "Grow") {
+            return <Sprout size={size} color={color} />;
+          }
+
+          if (route.name === "Connect") {
+            return <Users size={size} color={color} />;
           }
 
           if (
@@ -172,16 +181,17 @@ export default function ModernMainTabNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={
-          ModernHomeTab
-        }
+        component={HomeTab}
       />
 
       <Tab.Screen
-        name="Media"
-        component={
-          ModernMediaTab
-        }
+        name="Grow"
+        component={GrowTab}
+      />
+
+      <Tab.Screen
+        name="Connect"
+        component={ConnectTab}
       />
 
       <Tab.Screen
@@ -196,6 +206,7 @@ export default function ModernMainTabNavigator() {
         component={
           ModernGivingTab
         }
+        options={{ tabBarLabel: "Give" }}
       />
     </Tab.Navigator>
   );

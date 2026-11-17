@@ -289,20 +289,18 @@ export default function ModernEditProfileScreen({
               { color: colors.textMuted },
             ]}
           >
-            FIRST NAME
+            FIRST NAME (cannot be changed)
           </Text>
 
           <TextInput
             value={
               firstName
             }
-            onChangeText={
-              setFirstName
-            }
+            editable={false}
             style={[
               styles.input,
 
-              { backgroundColor: colors.background, color: colors.textPrimary },
+              { backgroundColor: colors.background, color: colors.textMuted, opacity: 0.7 },
             ]}
           />
 
@@ -313,20 +311,18 @@ export default function ModernEditProfileScreen({
               { color: colors.textMuted },
             ]}
           >
-            SURNAME
+            SURNAME (cannot be changed)
           </Text>
 
           <TextInput
             value={
               lastName
             }
-            onChangeText={
-              setLastName
-            }
+            editable={false}
             style={[
               styles.input,
 
-              { backgroundColor: colors.background, color: colors.textPrimary },
+              { backgroundColor: colors.background, color: colors.textMuted, opacity: 0.7 },
             ]}
           />
 

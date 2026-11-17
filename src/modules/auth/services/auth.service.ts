@@ -70,3 +70,22 @@ export const verifyOtp =
 
     return response.data;
   };
+/**
+ * Sends the password-reset link.
+ * NOTE: confirm this path with the backend team — it follows the
+ * naming of the other MobileAuth endpoints.
+ */
+export const FORGOT_PASSWORD_ENDPOINT =
+  "/portal/MobileAuth/forgot-password";
+
+export const forgotPassword = async (data: {
+  email: string;
+  tenantId?: string | null;
+}) => {
+  const response = await api.post(
+    FORGOT_PASSWORD_ENDPOINT,
+    data
+  );
+
+  return response.data;
+};

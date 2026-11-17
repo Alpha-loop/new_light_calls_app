@@ -1,3 +1,4 @@
+import { stripHtml } from "@/utils/stripHtml";
 import { HEADER_TOP_PADDING } from "@/theme/layout";
 
 import {
@@ -188,7 +189,7 @@ export default function ModernDevotionalsScreen({
                 ]}
                 numberOfLines={2}
               >
-                {today.content}
+                {stripHtml(today.content)}
               </Text>
 
               {estimateReadTime(

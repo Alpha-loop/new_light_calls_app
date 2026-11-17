@@ -17,10 +17,11 @@ import {
   Pencil,
   UserCog,
   HandCoins,
-  SlidersHorizontal,
   ChevronRight,
   LogOut,
 } from "lucide-react-native";
+
+import ProfileDetailsCard from "@/modules/profile/components/ProfileDetailsCard";
 
 import useProfile from "@/modules/profile/hooks/useProfile";
 
@@ -198,6 +199,10 @@ export default function ModernProfileScreen({
           </Text>
         ) : null}
 
+        {profile ? (
+          <ProfileDetailsCard profile={profile} />
+        ) : null}
+
         <View
           style={[
             styles.list,
@@ -314,60 +319,6 @@ export default function ModernProfileScreen({
             />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() =>
-              navigation.navigate(
-                "Settings"
-              )
-            }
-            style={[
-              styles.row,
-              { borderBottomColor: colors.divider },
-            ]}
-          >
-            <View
-              style={[
-                styles.rowIcon,
-                { backgroundColor: colors.primaryMuted },
-              ]}
-            >
-              <SlidersHorizontal
-                size={18}
-                color={colors.primary}
-              />
-            </View>
-
-            <View
-              style={{
-                flex: 1,
-              }}
-            >
-              <Text
-                style={[
-                  styles.rowTitle,
-                  { color: colors.textPrimary },
-                ]}
-              >
-                Preferences
-              </Text>
-
-              <Text
-                style={[
-                  styles.rowSubtitle,
-                  { color: colors.textMuted },
-                ]}
-              >
-                Church, account
-                and app settings
-              </Text>
-            </View>
-
-            <ChevronRight
-              size={18}
-              color={colors.textMuted}
-            />
-          </TouchableOpacity>
         </View>
 
         <TouchableOpacity

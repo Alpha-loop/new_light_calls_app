@@ -1,5 +1,7 @@
 import { HEADER_TOP_PADDING } from "@/theme/layout";
 
+import { useMemo } from "react";
+
 import {
   KeyboardAvoidingView,
   Platform,
@@ -17,6 +19,9 @@ import {
 } from "lucide-react-native";
 
 import useVerifyOtp from "@/modules/auth/hooks/useVerifyOtp";
+
+import { useTheme } from "@/theme/ThemeContext";
+import type { ColorTokens } from "@/theme/colors";
 
 export default function ModernVerifyOtpScreen({
   navigation,
@@ -39,6 +44,14 @@ export default function ModernVerifyOtpScreen({
     navigation
   );
 
+  const { colors } = useTheme();
+
+  // Rebuilt only when the theme changes (light <-> dark).
+  const styles = useMemo(
+    () => makeStyles(colors),
+    [colors]
+  );
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -56,10 +69,12 @@ export default function ModernVerifyOtpScreen({
             navigation.goBack()
           }
           hitSlop={14}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <ChevronLeft
             size={22}
-            color="rgba(17, 17, 17, 0.8)"
+            color={colors.textPrimary}
           />
         </TouchableOpacity>
       </View>
@@ -76,7 +91,7 @@ export default function ModernVerifyOtpScreen({
         >
           <ShieldCheck
             size={26}
-            color="#000000"
+            color={colors.onPrimaryMuted}
           />
         </View>
 
@@ -122,9 +137,16 @@ export default function ModernVerifyOtpScreen({
                 autoComplete="sms-otp"
                 textContentType="oneTimeCode"
                 maxLength={1}
-                style={
-                  styles.otpBox
-                }
+                selectionColor={colors.primary}
+                accessibilityLabel={`Digit ${index + 1} of ${otpArray.length}`}
+                style={[
+                  styles.otpBox,
+                  // Filled boxes get a brand-blue border so the user
+                  // can see how far through the code they are.
+                  digit
+                    ? styles.otpBoxFilled
+                    : null,
+                ]}
               />
             )
           )}
@@ -144,9 +166,10 @@ export default function ModernVerifyOtpScreen({
           activeOpacity={0.85}
           disabled={loading}
           onPress={handleVerify}
-          style={
-            styles.submitButton
-          }
+          style={[
+            styles.submitButton,
+            loading && styles.submitButtonLoading,
+          ]}
         >
           <Text
             style={
@@ -195,150 +218,117 @@ export default function ModernVerifyOtpScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-    backgroundColor: "#F5F5F5",
-  },
+    topBar: {
+      paddingHorizontal: 16,
+      paddingTop: HEADER_TOP_PADDING,
+      paddingBottom: 8,
+    },
 
-  topBar: {
-    paddingHorizontal: 16,
+    scroll: {
+      padding: 24,
+      alignItems: "center",
+    },
 
-    paddingTop: HEADER_TOP_PADDING,
+    iconWrap: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: colors.primaryMuted,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 18,
+    },
 
-    paddingBottom: 8,
-  },
+    title: {
+      fontSize: 22,
+      fontWeight: "800",
+      color: colors.textPrimary,
+    },
 
-  scroll: {
-    padding: 24,
+    description: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 19,
+      marginTop: 8,
+      marginBottom: 26,
+      paddingHorizontal: 12,
+    },
 
-    alignItems: "center",
-  },
+    otpRow: {
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 22,
+    },
 
-  iconWrap: {
-    width: 64,
+    otpBox: {
+      width: 44,
+      height: 52,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      textAlign: "center",
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.textPrimary,
+    },
 
-    height: 64,
+    otpBoxFilled: {
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+    },
 
-    borderRadius: 32,
+    errorText: {
+      color: colors.danger,
+      fontSize: 12,
+      marginBottom: 10,
+    },
 
-    backgroundColor: "#EFEEF9",
+    submitButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 24,
+      width: "100%",
+      paddingVertical: 15,
+      alignItems: "center",
+    },
 
-    alignItems: "center",
+    submitButtonLoading: {
+      opacity: 0.7,
+    },
 
-    justifyContent: "center",
+    submitText: {
+      color: colors.textOnPrimary,
+      fontWeight: "700",
+      fontSize: 13,
+      letterSpacing: 0.5,
+    },
 
-    marginBottom: 18,
-  },
+    resendRow: {
+      flexDirection: "row",
+      marginTop: 18,
+    },
 
-  title: {
-    fontSize: 22,
+    resendLabel: {
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
 
-    fontWeight: "800",
+    resendTimer: {
+      fontSize: 12,
+      color: colors.textMuted,
+    },
 
-    color: "rgba(17, 17, 17, 0.92)",
-  },
-
-  description: {
-    fontSize: 13,
-
-    color: "rgba(0,0,0,0.55)",
-
-    textAlign: "center",
-
-    lineHeight: 19,
-
-    marginTop: 8,
-
-    marginBottom: 26,
-
-    paddingHorizontal: 12,
-  },
-
-  otpRow: {
-    flexDirection: "row",
-
-    gap: 8,
-
-    marginBottom: 22,
-  },
-
-  otpBox: {
-    width: 44,
-
-    height: 52,
-
-    borderRadius: 10,
-
-    borderWidth: 1,
-
-    borderColor: "rgba(0,0,0,0.15)",
-
-    backgroundColor: "#FFFFFF",
-
-    textAlign: "center",
-
-    fontSize: 18,
-
-    fontWeight: "700",
-
-    color: "rgba(17, 17, 17, 0.9)",
-  },
-
-  errorText: {
-    color: "#B4413C",
-
-    fontSize: 12,
-
-    marginBottom: 10,
-  },
-
-  submitButton: {
-    backgroundColor: "#000000",
-
-    borderRadius: 24,
-
-    width: "100%",
-
-    paddingVertical: 15,
-
-    alignItems: "center",
-  },
-
-  submitText: {
-    color: "#FFFFFF",
-
-    fontWeight: "700",
-
-    fontSize: 13,
-
-    letterSpacing: 0.5,
-  },
-
-  resendRow: {
-    flexDirection: "row",
-
-    marginTop: 18,
-  },
-
-  resendLabel: {
-    fontSize: 12,
-
-    color: "rgba(0,0,0,0.5)",
-  },
-
-  resendTimer: {
-    fontSize: 12,
-
-    color: "rgba(0,0,0,0.4)",
-  },
-
-  resendLink: {
-    fontSize: 12,
-
-    fontWeight: "700",
-
-    color: "#000000",
-  },
-});
+    resendLink: {
+      fontSize: 12,
+      fontWeight: "700",
+      color: colors.primary,
+    },
+  });

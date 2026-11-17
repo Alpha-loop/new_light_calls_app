@@ -1,3 +1,4 @@
+import { stripHtml } from "@/utils/stripHtml";
 import {
   View,
   Text,
@@ -24,7 +25,7 @@ export default function EventInfoCard({
       </Text>
 
       <Text style={styles.description}>
-        {event.summary}
+        {stripHtml(event.summary)}
       </Text>
 
       <View style={styles.row}>

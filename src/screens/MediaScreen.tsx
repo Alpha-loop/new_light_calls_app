@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   useState,
 } from "react";
 
@@ -30,6 +31,7 @@ export default function ModernMediaScreen({
   const { colors } = useTheme();
 
   const {
+    loading,
     searchText,
     setSearchText,
     filteredMediaVideos,
@@ -84,26 +86,15 @@ export default function ModernMediaScreen({
             >
               Trending in Media
             </Text>
-
-            <TouchableOpacity
-              onPress={() => {
-                console.log(
-                  "View all videos pressed — no destination yet"
-                );
-              }}
-            >
-              <Text
-                style={[
-                  styles.viewAll,
-                  { color: colors.primary },
-                ]}
-              >
-                View all
-              </Text>
-            </TouchableOpacity>
           </View>
 
-          {filteredMediaVideos.length >
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color={colors.primary}
+              style={{ marginVertical: 40 }}
+            />
+          ) : filteredMediaVideos.length >
           0 ? (
             filteredMediaVideos.map(
               video => (
@@ -154,23 +145,6 @@ export default function ModernMediaScreen({
             >
               Recent Audios
             </Text>
-
-            <TouchableOpacity
-              onPress={() => {
-                console.log(
-                  "View all audios pressed — no destination yet"
-                );
-              }}
-            >
-              <Text
-                style={[
-                  styles.viewAll,
-                  { color: colors.primary },
-                ]}
-              >
-                View all
-              </Text>
-            </TouchableOpacity>
           </View>
 
           {allAudios.length >

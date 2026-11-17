@@ -1,3 +1,4 @@
+import { stripHtml } from "@/utils/stripHtml";
 import {
   StyleSheet,
   Text,
@@ -22,7 +23,7 @@ export default function FeedContent({
           styles.content
         }
       >
-        {content}
+        {stripHtml(content)}
       </Text>
     </View>
   );

@@ -1,3 +1,4 @@
+import { stripHtml } from "@/utils/stripHtml";
 import { HEADER_TOP_PADDING } from "@/theme/layout";
 
 import { useRef } from "react";
@@ -129,7 +130,7 @@ export default function ModernDevotionalDetailScreen({
     await Share.share({
       title: devotion.title,
 
-      message: `${devotion.title}\n\n${devotion.content}`,
+      message: `${devotion.title}\n\n${stripHtml(devotion.content)}`,
     });
   };
 
@@ -336,7 +337,7 @@ export default function ModernDevotionalDetailScreen({
               { color: colors.textSecondary },
             ]}
           >
-            {devotion.content}
+            {stripHtml(devotion.content)}
           </Text>
 
           <TouchableOpacity

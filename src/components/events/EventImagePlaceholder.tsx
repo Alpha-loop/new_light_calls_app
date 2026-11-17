@@ -33,7 +33,7 @@ export default function EventImagePlaceholder({
       ]}
     >
       <CalendarDays
-        size={40}
+        size={24}
         color="rgba(255,255,255,0.85)"
       />
     </View>

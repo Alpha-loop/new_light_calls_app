@@ -1,3 +1,5 @@
+import { getEventImage } from "@/utils/eventImage";
+import { stripHtml } from "@/utils/stripHtml";
 import { HEADER_TOP_PADDING } from "@/theme/layout";
 
 import {
@@ -168,11 +170,11 @@ export default function ModernEventDetailsScreen({
             { backgroundColor: colors.placeholder },
           ]}
         >
-          {event.primaryImageUrl ? (
+          {getEventImage(event) ? (
             <Image
               cachePolicy="memory-disk"
               source={{
-                uri: event.primaryImageUrl,
+                uri: getEventImage(event) as string,
               }}
               // Was defaulting to contentFit="cover" inside a
               // fixed 220px box — fine for a wide landscape
@@ -190,7 +192,7 @@ export default function ModernEventDetailsScreen({
             />
           ) : (
             <EventImagePlaceholder
-              height={320}
+              height={120}
             />
           )}
 
@@ -388,7 +390,7 @@ export default function ModernEventDetailsScreen({
                   { color: colors.textSecondary },
                 ]}
               >
-                {event.summary}
+                {stripHtml(event.summary)}
               </Text>
             </>
           ) : null}

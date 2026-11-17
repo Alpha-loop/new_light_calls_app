@@ -13,7 +13,6 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -21,6 +20,7 @@ import {
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
+  BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 
@@ -54,7 +54,7 @@ const NoteEditorSheet = forwardRef<
     );
 
   const snapPoints = useMemo(
-    () => ["60%"],
+    () => ["70%"],
     []
   );
 
@@ -129,7 +129,9 @@ const NoteEditorSheet = forwardRef<
         renderBackdrop
       }
       enablePanDownToClose
-      keyboardBehavior="extend"
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
       backgroundStyle={{
         backgroundColor: colors.surface,
       }}
@@ -180,15 +182,14 @@ const NoteEditorSheet = forwardRef<
           </TouchableOpacity>
         </View>
 
-        <TextInput
+        <BottomSheetTextInput
           value={content}
           onChangeText={
             setContent
           }
-          placeholder="Write your note..."
+          placeholder="Write your thoughts, prayers or reflections…"
           placeholderTextColor={colors.textMuted}
           multiline
-          autoFocus
           style={[
             styles.input,
             {
@@ -240,6 +241,8 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
+
+    minHeight: 180,
 
     borderRadius: 14,
 
